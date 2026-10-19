@@ -10,6 +10,8 @@
 
 core.lua
 model.lua
+layouts.lua
 window.lua
+schematic.lua
 sidebar.lua
 info.lua

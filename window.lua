@@ -5,6 +5,7 @@
 --
 -- The mockup's layout is 1320 x 790; the window keeps those numbers and is scaled to take the
 -- same share of the screen (88% of its height), so every gap and type size keeps its proportion.
+-- Drag the bottom-right corner to resize it (saved); the map column takes the change.
 
 local Core = NorgannonCore
 local O = Oracle
@@ -19,6 +20,9 @@ local W, H = 1320, 790
 local SIDE, DETAIL, GAP, PAD = 262, 392, 10, 10
 local SCREEN_SHARE = .88
 local GRID = 32
+-- resizing: the sidebar and detail columns keep their widths; the map takes the rest
+local MIN_W, MIN_H = SIDE + DETAIL + 380 + 2 * PAD + 2 * GAP, 600
+local MAX_W, MAX_H = 2400, 1400
 
 local win
 local panes = {}
@@ -37,10 +41,12 @@ end
 
 function Window:ApplyLook()
   if not win then return end
+  win:SetSize(O.db.width or W, O.db.height or H)
   win:SetScale(Window.Scale())
   win:SetAlpha(O.db.opacity or 1)
   win.locked = O.db.locked and true or false
   if win.lockButton then win.lockButton:SetLabel(O.db.locked and "Unlock" or "Lock") end
+  if win.grip then win.grip:SetShown(not O.db.locked) end
 end
 
 -------------------------------------------------------------------------------------------
@@ -110,7 +116,10 @@ local function mapPanel(parent)
     for y = GRID, h, GRID do line(false, y) end
     for i = n + 1, #self.grid do self.grid[i]:Hide() end
   end
-  map:SetScript("OnSizeChanged", function(self) self:Layout() end)
+  map:SetScript("OnSizeChanged", function(self)
+    self:Layout()
+    if O.db.selected and O.Schematic and win and win:IsShown() then O.Schematic:Draw(self, O.db.selected) end
+  end)
 
   -- the empty state: no schematic for this instance yet
   map.empty = CreateFrame("Frame", nil, map)
@@ -140,6 +149,8 @@ local function fillHeader(e)
   end
   col.facts:SetText(table.concat(parts, "  ·  "))
   local empty = col.map.empty
+  local drawn = O.Schematic and O.Schematic:Draw(col.map, e.key)
+  empty:SetShown(not drawn)
   if e.forever and e.bosses == 0 then
     empty.title:SetText("Not mapped yet")
     empty.line1:SetText("WoW Forever added " .. e.name .. "; NorgannonDB learns it from players.")
@@ -147,7 +158,7 @@ local function fillHeader(e)
   else
     empty.title:SetText("Schematic not drawn yet")
     empty.line1:SetText(string.format("%d bosses and %d quests are known for %s.", e.bosses, e.quests, e.name))
-    empty.line2:SetText("Its schematic map arrives in the next build.")
+    empty.line2:SetText("Its schematic map hasn't been drawn yet.")
   end
 end
 
@@ -243,7 +254,40 @@ local function build()
     Window:ApplyLook()
   end)
   win.lockButton:SetSize(54, 20)
-  win.lockButton:SetPoint("RIGHT", -10, 0)
+  win.lockButton:SetPoint("RIGHT", -28, 0)
+
+  -- the resize grip in the bottom-right corner
+  win:SetResizable(true)
+  if win.SetResizeBounds then win:SetResizeBounds(MIN_W, MIN_H, MAX_W, MAX_H) end
+  local grip = CreateFrame("Button", nil, win)
+  grip:SetSize(16, 16)
+  grip:SetPoint("BOTTOMRIGHT", -3, 3)
+  grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+  grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+  grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+  grip:SetScript("OnMouseDown", function(_, button)
+    if button == "LeftButton" and not O.db.locked then win:StartSizing("BOTTOMRIGHT") end
+  end)
+  grip:SetScript("OnMouseUp", function()
+    win:StopMovingOrSizing()
+    local w = math.floor(math.max(MIN_W, math.min(MAX_W, win:GetWidth() or W)) + .5)
+    local h = math.floor(math.max(MIN_H, math.min(MAX_H, win:GetHeight() or H)) + .5)
+    O.db.width, O.db.height = w, h
+    Window:ApplyLook()
+  end)
+  grip:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:AddLine("Drag to resize", 1, 1, 1)
+    GameTooltip:AddLine("Right-click: the original size", C.muted[1], C.muted[2], C.muted[3])
+    GameTooltip:Show()
+  end)
+  grip:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  grip:RegisterForClicks("RightButtonUp")
+  grip:SetScript("OnClick", function()
+    O.db.width, O.db.height = nil, nil
+    Window:ApplyLook()
+  end)
+  win.grip = grip
   win.opacity = UI.Slider(win.footer, .4, 1, .05, function(v)
     O.db.opacity = v
     win:SetAlpha(v)

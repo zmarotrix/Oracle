@@ -8,11 +8,13 @@ there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
   Raids (Zones and PvP later); sort by level, name or continent.
 - Every vanilla dungeon and raid, with wings as their own entries (Scarlet Monastery, Dire Maul,
   Blackrock Spire, Stratholme), and WoW Forever's own instances as NorgannonDB learns them.
+- Schematic maps for every classic instance and wing: numbered bosses in route order, the
+  entrance and points of interest, connected by paths (Oracle's own drawings).
 - The Info tab: location, level range, group size, keys and attunements, your lockout, and
   "Show entrance on map".
+- A resizable, movable window with adjustable opacity and a lock.
 
-Still to come (see the plan): schematic maps, the Bosses, Loot and Quests tabs, opening on the
-instance you're in.
+Still to come (see the plan): the Bosses, Loot and Quests tabs, opening on the instance you're in.
 
 `/oracle` opens it; `/oracle deadmines` opens an instance by name.
 
