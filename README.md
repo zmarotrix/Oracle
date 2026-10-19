@@ -10,11 +10,14 @@ there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
   Blackrock Spire, Stratholme), and WoW Forever's own instances as NorgannonDB learns them.
 - Schematic maps for every classic instance and wing: numbered bosses in route order, the
   entrance and points of interest, connected by paths (Oracle's own drawings).
+- The Bosses tab (numbered as on the map, with ranks, levels and their best gear) and the Loot
+  tab (each boss's own loot with drop chances; filter by boss and kind; the game's tooltips,
+  shift-click to link, ctrl-click to try on).
 - The Info tab: location, level range, group size, keys and attunements, your lockout, and
   "Show entrance on map".
 - A movable window you can zoom from its corner, with adjustable opacity and a lock.
 
-Still to come (see the plan): the Bosses, Loot and Quests tabs, opening on the instance you're in.
+Still to come (see the plan): the Quests tab, links with Clairvoyance, opening on the instance you're in.
 
 `/oracle` opens it; `/oracle deadmines` opens an instance by name.
 

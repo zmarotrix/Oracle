@@ -15,3 +15,6 @@ window.lua
 schematic.lua
 sidebar.lua
 info.lua
+items.lua
+bosses.lua
+loot.lua
