@@ -202,6 +202,9 @@ local function fill(_, e)
     about:SetText("Bosses, loot and quests come from NorgannonDB, the open database. The map is a hand-drawn "
       .. "schematic. Something wrong in game? The NorgannonDB Collector notices and reports it.")
   end
+  if e.inst.credits then
+    about:SetText(about:GetText() .. " WoW Forever's dungeon data from DungeonJournal by Exehn, with thanks.")
+  end
 end
 
 O.Window:RegisterPane("info", build, fill)

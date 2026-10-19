@@ -45,7 +45,7 @@ function Schematic.Legend(key)
   local inst = Core.DB:Instance(key)
   if not (layout and inst) then return nil end
   local known = {}
-  for _, b in ipairs(inst.bosses or {}) do known[b.id] = b end
+  for _, b in ipairs(inst.bosses or {}) do if b.id then known[b.id] = b end end
   local nodes, used, n = {}, {}, 0
   for _, node in ipairs(layout.nodes) do
     local copy = {}
@@ -68,10 +68,10 @@ function Schematic.Legend(key)
   end
   local extra, letter = {}, 0
   for _, b in ipairs(inst.bosses or {}) do
-    if not used[b.id] then
+    if not (b.id and used[b.id]) then
       letter = letter + 1
-      extra[#extra + 1] = { npc = b.id, boss = b, letter = string.char(64 + letter), unplaced = true,
-        label = Core.DB:Name("npcs", b.id) or ("Creature " .. b.id) }
+      extra[#extra + 1] = { npc = b.id or b.name, boss = b, letter = string.char(64 + letter), unplaced = true,
+        label = (b.id and Core.DB:Name("npcs", b.id)) or b.name or "?" }
     end
   end
   return { nodes = nodes, extra = extra, edges = layout.edges or {} }

@@ -23,6 +23,7 @@ Loot.state = state
 
 ---An item's drop chance from a boss (percent), or nil when unknown.
 function Loot.Chance(npc, item)
+  if type(npc) ~= "number" then return nil end
   local record = DB:Get("npcs", npc)
   local c = record and record.drops and record.drops[item]
   if type(c) == "number" and c > 0 then return c end
@@ -48,6 +49,18 @@ function Loot.Rows(key)
         out[#out + 1] = { group = row.name }
         for _, it in ipairs(items) do out[#out + 1] = it end
       end
+    end
+  end
+  -- what the instance's ordinary enemies drop
+  local inst = Core.DB:Instance(key)
+  if state.boss == "all" and inst and inst.trash then
+    local items = {}
+    for _, id in ipairs(inst.trash) do
+      if state.kinds[O.Items.Kind(id)] then items[#items + 1] = { item = id, trash = true } end
+    end
+    if #items > 0 then
+      out[#out + 1] = { group = "Trash" }
+      for _, it in ipairs(items) do out[#out + 1] = it end
     end
   end
   return out

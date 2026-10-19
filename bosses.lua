@@ -30,13 +30,15 @@ function Bosses.Rows(key)
   local legend = O.Schematic.Legend(key)
   local inst = Core.DB:Instance(key)
   local lootOf = {}
-  for _, b in ipairs(inst and inst.bosses or {}) do lootOf[b.id] = b.loot or {} end
+  -- a boss without a creature id (known by name only) is keyed by its name
+  local function keyOf(b) return b.id or b.name end
+  for _, b in ipairs(inst and inst.bosses or {}) do lootOf[keyOf(b)] = b.loot or {} end
   local function add(row)
-    local npc = DB:Get("npcs", row.npc)
+    local npc = type(row.npc) == "number" and DB:Get("npcs", row.npc) or nil
     row.level = npc and (npc.maxLevel or npc.minLevel)
     row.rank = npc and npc.rank
     row.loot = lootOf[row.npc] or {}
-    row.name = row.label or Core.DB:Name("npcs", row.npc) or ("Creature " .. row.npc)
+    row.name = row.label or (type(row.npc) == "number" and Core.DB:Name("npcs", row.npc)) or tostring(row.npc)
     rows[#rows + 1] = row
   end
   if legend then
@@ -45,7 +47,7 @@ function Bosses.Rows(key)
     end
     for _, x in ipairs(legend.extra) do add({ npc = x.npc, num = x.letter, unplaced = true }) end
   else
-    for i, b in ipairs(inst and inst.bosses or {}) do add({ npc = b.id, num = tostring(i) }) end
+    for i, b in ipairs(inst and inst.bosses or {}) do add({ npc = keyOf(b), num = tostring(i) }) end
   end
   return rows
 end
