@@ -32,6 +32,8 @@ local DEFAULTS = {
   opacity = 1,
   locked = false,
   tooltips = true,         -- the Oracle line in NPC and item tooltips
+  openOnEnter = false,     -- open the window when you enter a dungeon or raid
+  -- lastWing[areaId]: the wing last shown for an instance whose wings share a map
 }
 
 local function fill(target, defaults)
@@ -58,13 +60,79 @@ function O:Listen(message, owner, fn) Core:Listen("ORACLE_" .. message, owner, f
 -------------------------------------------------------------------------------------------
 
 ---The instance you're standing in, if NorgannonDB knows it (its first wing for wing instances).
+-- Wings that share one game map (Scarlet Monastery, Dire Maul, Blackrock Spire, Stratholme):
+-- the sub-zone names you see inside each one
+local WING_PLACES = {
+  ["sm-graveyard"] = { "Graveyard", "Chamber of Atonement", "Forlorn Cloister", "Honor's Tomb" },
+  ["sm-library"] = { "Library", "Huntsman's Cloister", "Gallery of Treasures", "Athenaeum" },
+  ["sm-armory"] = { "Armory", "Training Grounds", "Footman's Armory", "Crusader's Armory", "Hall of Champions" },
+  ["sm-cathedral"] = { "Cathedral", "Chapel Gardens", "Crusader's Chapel" },
+  ["dm-east"] = { "Warpwood Quarter", "The Hidden Reach", "The Conservatory", "The Shrine of Eldretharr" },
+  ["dm-west"] = { "Capital Gardens", "Court of the Highborne", "Prison of Immol'thar", "Athenaeum" },
+  ["dm-north"] = { "Gordok's Seat", "Halls of Destruction" },
+  ["lbrs"] = { "Hordemar City", "Mok'Doom", "Tazz'Alaor", "Skitterweb Tunnels", "The Storehouse", "Chamber of Battle" },
+  ["ubrs"] = { "Dragonspire Hall", "Hall of Binding", "The Rookery", "Hall of Blackhand", "Blackrock Stadium", "The Furnace", "Spire Throne" },
+  ["strat-live"] = { "King's Square", "Market Row", "Crusaders' Square", "The Scarlet Bastion", "The Hall of Lights", "The Hoard" },
+  ["strat-undead"] = { "Elders' Square", "The Gauntlet", "Slaughter Square", "The Slaughter House" },
+}
+O.WING_PLACES = WING_PLACES
+
+local function zoneText(fn)
+  local f = rawget(_G, fn)
+  if not f then return nil end
+  local ok, text = pcall(f)
+  if ok and type(text) == "string" and not Core.IsSecret(text) and text ~= "" then return text end
+end
+
+---The instance you're standing in, if NorgannonDB knows it. For wings that share a map: the
+---wing you last chose for it in Oracle, else the one whose sub-zone you're in, else the first.
 function O.CurrentInstance()
   if not GetInstanceInfo then return nil end
   local _, itype, _, _, _, _, _, instanceId = GetInstanceInfo()
   if Core.IsSecret(itype) or not itype or itype == "none" or Core.IsSecret(instanceId) then return nil end
   local area = DB.maps and DB.maps.instanceToArea and DB.maps.instanceToArea[instanceId]
   local keys = area and Core.DB:InstancesAt(area) or {}
+  if #keys <= 1 then return keys[1] end
+  local sub = zoneText("GetSubZoneText") or zoneText("GetMinimapZoneText")
+  if sub then
+    for _, key in ipairs(keys) do
+      for _, place in ipairs(WING_PLACES[key] or {}) do
+        if place == sub then return key end
+      end
+    end
+  end
+  local last = O.db and O.db.lastWing and O.db.lastWing[area]
+  for _, key in ipairs(keys) do if key == last then return key end end
   return keys[1]
+end
+
+-- choosing a wing in Oracle remembers it for that instance's map
+Core:Listen("ORACLE_SELECTED", "oracle.wings", function(_, key)
+  local inst = Core.DB:Instance(key)
+  if inst and inst.group and inst.area and O.db then
+    O.db.lastWing = O.db.lastWing or {}
+    O.db.lastWing[inst.area] = key
+  end
+end)
+
+-- entering an instance: follow it in the window, or open on it (setting: OracleDB.openOnEnter)
+local lastInstance
+local function entered()
+  if not O.db then return end
+  local key = O.CurrentInstance()
+  if key == lastInstance then return end
+  lastInstance = key
+  if not key then return end
+  local win = O.Window and O.Window.frame
+  if win and win:IsShown() then
+    O.Window:Select(key)
+  elseif O.db.openOnEnter and not InCombatLockdown() then
+    O.Window:Open(key)
+  end
+end
+O.Entered = entered
+for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED" }) do
+  Core:On(event, "oracle.enter", function() C_Timer.After(.5, entered) end)
 end
 
 ---Opens Oracle (on an instance key, else the one you're in, else the last one shown); again closes it.
@@ -88,6 +156,8 @@ SlashCmdList["ORACLE"] = function(msg)
   msg = strtrim(string.lower(msg or ""))
   if msg == "" then
     O:Toggle()
+  elseif msg == "settings" or msg == "options" then
+    O:OpenSettings()
   else
     -- /oracle deadmines, /oracle scarlet: the first instance whose name or key matches
     for _, key in ipairs(Core.DB:InstanceKeys()) do
@@ -100,3 +170,6 @@ SlashCmdList["ORACLE"] = function(msg)
     O:Print("no instance matches \"" .. msg .. "\"")
   end
 end
+
+BINDING_HEADER_ORACLE = "Oracle"
+BINDING_NAME_ORACLE_TOGGLE = "Open or close Oracle"

@@ -3,7 +3,7 @@
 Every dungeon and raid in WoW Forever: a map, the bosses, their loot and the quests that send you
 there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
 
-**v0.1 (in development):**
+**v0.9 (release candidate):**
 - The window, as in the suite's mockup: search over instances, bosses and loot; Dungeons and
   Raids (Zones and PvP later); sort by level, name or continent.
 - Every vanilla dungeon and raid, with wings as their own entries (Scarlet Monastery, Dire Maul,
@@ -20,7 +20,10 @@ there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
   "Show entrance on map".
 - A movable window you can zoom from its corner, with adjustable opacity and a lock.
 
-Still to come (see the plan): opening on the instance you're in, settings, a release candidate.
+- Opens on the instance you're in (on the right wing), optionally as you enter; settings under
+  NorgannonDB in the game's Settings (`/oracle settings`); a key binding.
+
+Next: Phase B (zones, and professions with the skill ladder).
 
 `/oracle` opens it; `/oracle deadmines` opens an instance by name.
 

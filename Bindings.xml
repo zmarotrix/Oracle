@@ -1,0 +1,5 @@
+<Bindings>
+  <Binding name="ORACLE_TOGGLE" header="ORACLE" category="ADDONS">
+    Oracle:Toggle()
+  </Binding>
+</Bindings>

@@ -2,7 +2,7 @@
 ## Title: |cffb48cffOracle|r
 ## Notes: Every dungeon and raid in WoW Forever: maps, bosses, loot and the quests that send you there. Powered by NorgannonDB. /oracle
 ## Author: Maro
-## Version: 0.1.0
+## Version: 0.9.0
 ## X-License: All Rights Reserved
 ## Dependencies: NorgannonDB, NorgannonDB_Core
 ## SavedVariables: OracleDB
@@ -20,3 +20,4 @@ bosses.lua
 loot.lua
 quests.lua
 links.lua
+settings.lua
