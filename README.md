@@ -13,11 +13,14 @@ there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
 - The Bosses tab (numbered as on the map, with ranks, levels and their best gear) and the Loot
   tab (each boss's own loot with drop chances; filter by boss and kind; the game's tooltips,
   shift-click to link, ctrl-click to try on).
+- The Quests tab: every quest that sends you there, with its giver, requirements, rewards and
+  XP; "Track in Clairvoyance" puts the giver on your map.
+- "Open in Oracle" from Clairvoyance's quest menu, and an Oracle line in boss and loot tooltips.
 - The Info tab: location, level range, group size, keys and attunements, your lockout, and
   "Show entrance on map".
 - A movable window you can zoom from its corner, with adjustable opacity and a lock.
 
-Still to come (see the plan): the Quests tab, links with Clairvoyance, opening on the instance you're in.
+Still to come (see the plan): opening on the instance you're in, settings, a release candidate.
 
 `/oracle` opens it; `/oracle deadmines` opens an instance by name.
 

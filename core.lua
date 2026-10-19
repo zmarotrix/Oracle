@@ -31,6 +31,7 @@ local DEFAULTS = {
   scale = 1,               -- on top of the fit-to-screen scale
   opacity = 1,
   locked = false,
+  tooltips = true,         -- the Oracle line in NPC and item tooltips
 }
 
 local function fill(target, defaults)

@@ -18,3 +18,5 @@ info.lua
 items.lua
 bosses.lua
 loot.lua
+quests.lua
+links.lua
