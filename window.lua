@@ -5,7 +5,7 @@
 --
 -- The mockup's layout is 1320 x 790; the window keeps those numbers and is scaled to take the
 -- same share of the screen (88% of its height), so every gap and type size keeps its proportion.
--- Drag the bottom-right corner to resize it (saved); the map column takes the change.
+-- Dragging the bottom-right corner zooms the whole window (saved as OracleDB.scale).
 
 local Core = NorgannonCore
 local O = Oracle
@@ -20,9 +20,7 @@ local W, H = 1320, 790
 local SIDE, DETAIL, GAP, PAD = 262, 392, 10, 10
 local SCREEN_SHARE = .88
 local GRID = 32
--- resizing: the sidebar and detail columns keep their widths; the map takes the rest
-local MIN_W, MIN_H = SIDE + DETAIL + 380 + 2 * PAD + 2 * GAP, 600
-local MAX_W, MAX_H = 2400, 1400
+local MIN_ZOOM, MAX_ZOOM = .6, 1.6   -- the size grip's range, on top of the fit-to-screen scale
 
 local win
 local panes = {}
@@ -41,12 +39,28 @@ end
 
 function Window:ApplyLook()
   if not win then return end
-  win:SetSize(O.db.width or W, O.db.height or H)
+  win:SetSize(W, H)
   win:SetScale(Window.Scale())
   win:SetAlpha(O.db.opacity or 1)
   win.locked = O.db.locked and true or false
   if win.lockButton then win.lockButton:SetLabel(O.db.locked and "Unlock" or "Lock") end
   if win.grip then win.grip:SetShown(not O.db.locked) end
+end
+
+---Zooms the window (1 = the mockup's share of the screen), keeping its top-left corner at
+---left, top (UIParent units); saves the zoom and the position.
+function Window:SetZoom(zoom, left, top)
+  O.db.scale = math.max(MIN_ZOOM, math.min(MAX_ZOOM, zoom))
+  O.db.width, O.db.height = nil, nil   -- from builds that resized instead of zooming
+  local s = Window.Scale()
+  win:SetScale(s)
+  if left and top then
+    win:ClearAllPoints()
+    win:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left / s, top / s)
+    if Core.db and Core.db.windows then
+      Core.db.windows.OracleWindow = { point = "TOPLEFT", relativePoint = "BOTTOMLEFT", x = left / s, y = top / s }
+    end
+  end
 end
 
 -------------------------------------------------------------------------------------------
@@ -256,36 +270,41 @@ local function build()
   win.lockButton:SetSize(54, 20)
   win.lockButton:SetPoint("RIGHT", -28, 0)
 
-  -- the resize grip in the bottom-right corner
-  win:SetResizable(true)
-  if win.SetResizeBounds then win:SetResizeBounds(MIN_W, MIN_H, MAX_W, MAX_H) end
+  -- the size grip in the bottom-right corner: dragging zooms the whole window (the layout stays
+  -- the mockup's), with its top-left corner held in place
   local grip = CreateFrame("Button", nil, win)
   grip:SetSize(16, 16)
   grip:SetPoint("BOTTOMRIGHT", -3, 3)
   grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
   grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
   grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
-  grip:SetScript("OnMouseDown", function(_, button)
-    if button == "LeftButton" and not O.db.locked then win:StartSizing("BOTTOMRIGHT") end
+  local function cursorX() return (GetCursorPosition()) / UIParent:GetEffectiveScale() end
+  grip:SetScript("OnMouseDown", function(self, button)
+    if button ~= "LeftButton" or O.db.locked then return end
+    -- hold the top-left corner: re-anchor there in UIParent units
+    local s = win:GetScale()
+    self.left, self.top = (win:GetLeft() or 0) * s, (win:GetTop() or 0) * s
+    self.startX, self.startScale = cursorX(), O.db.scale or 1
+    self.width = W * Window.Scale()                    -- the window's width on screen, in UIParent units
+    self:SetScript("OnUpdate", function()
+      local wanted = self.width + (cursorX() - self.startX)
+      Window:SetZoom(self.startScale * wanted / self.width, self.left, self.top)
+    end)
   end)
-  grip:SetScript("OnMouseUp", function()
-    win:StopMovingOrSizing()
-    local w = math.floor(math.max(MIN_W, math.min(MAX_W, win:GetWidth() or W)) + .5)
-    local h = math.floor(math.max(MIN_H, math.min(MAX_H, win:GetHeight() or H)) + .5)
-    O.db.width, O.db.height = w, h
-    Window:ApplyLook()
+  grip:SetScript("OnMouseUp", function(self)
+    self:SetScript("OnUpdate", nil)
   end)
   grip:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:AddLine("Drag to resize", 1, 1, 1)
+    GameTooltip:AddLine("Drag to make the window bigger or smaller", 1, 1, 1)
     GameTooltip:AddLine("Right-click: the original size", C.muted[1], C.muted[2], C.muted[3])
     GameTooltip:Show()
   end)
   grip:SetScript("OnLeave", function() GameTooltip:Hide() end)
   grip:RegisterForClicks("RightButtonUp")
   grip:SetScript("OnClick", function()
-    O.db.width, O.db.height = nil, nil
-    Window:ApplyLook()
+    local s = win:GetScale()
+    Window:SetZoom(1, (win:GetLeft() or 0) * s, (win:GetTop() or 0) * s)
   end)
   win.grip = grip
   win.opacity = UI.Slider(win.footer, .4, 1, .05, function(v)

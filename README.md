@@ -12,7 +12,7 @@ there. Part of the NorgannonDB suite, with Clairvoyance, Foresight and Archivum.
   entrance and points of interest, connected by paths (Oracle's own drawings).
 - The Info tab: location, level range, group size, keys and attunements, your lockout, and
   "Show entrance on map".
-- A resizable, movable window with adjustable opacity and a lock.
+- A movable window you can zoom from its corner, with adjustable opacity and a lock.
 
 Still to come (see the plan): the Bosses, Loot and Quests tabs, opening on the instance you're in.
 
