@@ -8,10 +8,10 @@ local DB = NorgannonDB
 Oracle = { addonName = ADDON or "Oracle" }
 local O = Oracle
 
-if not (Core and Core:Require(1, 12)) or not (DB and DB:RequireSchema(1, 3)) then
+if not (Core and Core:Require(1, 13)) or not (DB and DB:RequireSchema(1, 3)) then
   O.disabled = true
   C_Timer.After(5, function()
-    print("|cffb48cffOracle|r needs NorgannonDB 1.3 and NorgannonDB Core 1.12 or newer; it is turned off.")
+    print("|cffb48cffOracle|r needs NorgannonDB 1.3 and NorgannonDB Core 1.13 or newer; it is turned off.")
   end)
   return
 end
@@ -170,6 +170,24 @@ SlashCmdList["ORACLE"] = function(msg)
     O:Print("no instance matches \"" .. msg .. "\"")
   end
 end
+
+-- the minimap button and the client's addon menu: click opens or closes, right-click the settings
+local function onClick(button)
+  if button == "RightButton" then O:OpenSettings() else O:Toggle() end
+end
+local function tooltip(tt)
+  tt:AddLine("Oracle", .706, .549, 1)
+  tt:AddLine("Every dungeon and raid: maps, bosses, loot, quests", 1, 1, 1)
+  tt:AddLine("Click: open or close  ·  Right-click: settings  ·  Drag: move", .43, .4, .32)
+end
+Core:OnLogin(function() Core.MinimapButton:Add("oracle", { onClick = onClick, tooltip = tooltip }) end)
+function Oracle_OnAddonCompartmentClick(_, button) onClick(button) end
+function Oracle_OnAddonCompartmentEnter(_, frame)
+  GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
+  tooltip(GameTooltip)
+  GameTooltip:Show()
+end
+function Oracle_OnAddonCompartmentLeave() GameTooltip:Hide() end
 
 BINDING_HEADER_ORACLE = "Oracle"
 BINDING_NAME_ORACLE_TOGGLE = "Open or close Oracle"

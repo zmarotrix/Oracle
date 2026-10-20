@@ -7,6 +7,9 @@
 ## Dependencies: NorgannonDB, NorgannonDB_Core
 ## SavedVariables: OracleDB
 ## IconTexture: Interface\AddOns\NorgannonDB_Core\media\marks\oracle
+## AddonCompartmentFunc: Oracle_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Oracle_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Oracle_OnAddonCompartmentLeave
 
 core.lua
 model.lua

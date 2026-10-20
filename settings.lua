@@ -42,6 +42,10 @@ Core:OnLogin(function()
     end
   end } })
 
+  list:Toggle("Show the minimap button", "Oracle is also in the game's addon menu and opens with /oracle.",
+    function() return Core.MinimapButton:IsShown("oracle") end,
+    function(on) Core.MinimapButton:SetShown("oracle", on) end)
+
   list:Header("Opening")
   list:Toggle("Open when I enter a dungeon or raid", "Oracle always opens on the instance you're in; this also opens it as you enter.",
     function() return O.db.openOnEnter end,
