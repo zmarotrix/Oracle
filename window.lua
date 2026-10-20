@@ -24,6 +24,7 @@ local MIN_ZOOM, MAX_ZOOM = .6, 1.6   -- the size grip's range, on top of the fit
 
 local win
 local panes = {}
+local shownKey, shownReal   -- what the map panel shows
 
 local function accent() return UI.Accent("oracle") end
 
@@ -99,6 +100,7 @@ local function mapPanel(parent)
   map.shadeB:SetGradient("VERTICAL", dark, clear)
   map.outline = UI.Round(map, "OVERLAY", 0, 4, "line")
   map.outline:SetColor(C.line, 1)
+  O.View:Attach(map)   -- the stage the game map's tiles sit on, wheel zoom and drag
 
   function map:Layout()
     local w, h = self:GetWidth() or 0, self:GetHeight() or 0
@@ -132,7 +134,8 @@ local function mapPanel(parent)
   end
   map:SetScript("OnSizeChanged", function(self)
     self:Layout()
-    if O.db.selected and O.Schematic and win and win:IsShown() then O.Schematic:Draw(self, O.db.selected) end
+    O.View:Resized()
+    if O.db.selected and win and win:IsShown() then Window:DrawMap() end
   end)
 
   -- the empty state: no schematic for this instance yet
@@ -150,6 +153,29 @@ local function mapPanel(parent)
   return map
 end
 
+---Draws the map panel for an instance (the one shown by default): the game map when it has one
+---and the switch says so, the schematic's nodes over it. Returns whether anything was drawn.
+function Window:DrawMap(key)
+  key = key or O.db.selected
+  local map = win and win.mapcol.map
+  if not (map and key) then return false end
+  if key ~= shownKey then O.View:Reset(true) end   -- another instance: the whole map again
+  shownKey = key
+  local real = O.RealMap and O.RealMap:Draw(map, key) or false
+  shownReal = real
+  local drawn = O.Schematic and O.Schematic:Draw(map, key, real) or false
+  if map.empty then map.empty:SetShown(not (real or drawn)) end
+  return real or drawn
+end
+
+---Places the markers again for the view (zoomed or moved); the game map's tiles move by themselves.
+function Window:DrawMarkers()
+  local map = win and win.mapcol.map
+  if not (map and shownKey and O.Schematic) then return end
+  O.Schematic:Draw(map, shownKey, shownReal)
+  if O.MapEdit and O.MapEdit.active then O.MapEdit:Update() end
+end
+
 local function fillHeader(e)
   local col = win.mapcol
   col.title:SetText(e.name)
@@ -163,8 +189,7 @@ local function fillHeader(e)
   end
   col.facts:SetText(table.concat(parts, "  ·  "))
   local empty = col.map.empty
-  local drawn = O.Schematic and O.Schematic:Draw(col.map, e.key)
-  empty:SetShown(not drawn)
+  empty:SetShown(not Window:DrawMap(e.key))
   if e.forever and e.bosses == 0 then
     empty.title:SetText("Not mapped yet")
     empty.line1:SetText("WoW Forever added " .. e.name .. "; NorgannonDB learns it from players.")
@@ -318,6 +343,8 @@ local function build()
   win.opacityLabel:SetPoint("RIGHT", win.opacity, "LEFT", -6, 0)
   win.opacityLabel:SetText("Window opacity")
 
+  if O.Crafts then O.Crafts:Build(win) end
+  if O.Zones then O.Zones:Build(win) end
   if O.Sidebar then O.Sidebar:Build(side) end
   Window:ApplyLook()
   win:HookScript("OnShow", function() Window:ApplyLook() end)
@@ -330,6 +357,23 @@ function Window:Get()
   return win
 end
 
+---Instances or Crafts: which view the map and detail columns show.
+function Window:SetMode(mode)
+  if not win then return end
+  local instances = mode ~= "crafts" and mode ~= "zones"
+  self.mode = mode
+  win.mapcol:SetShown(instances)
+  win.tabs:SetShown(instances)
+  win.paneArea:SetShown(instances)
+  if O.Crafts then O.Crafts:SetShown(mode == "crafts") end
+  if O.Zones then O.Zones:SetShown(mode == "zones") end
+  local hints = {
+    crafts = "Recipes coloured for your skill · hover for the item, click for what it takes",
+    zones = "Click a pin: a dungeon opens in Oracle, anything else shows on your map",
+  }
+  win.footerText:SetText(hints[mode] or "Click a number on the map or in the list to focus a boss")
+end
+
 ---Shows an instance: the list's selection, the header, the map panel and the open tab.
 function Window:Select(key)
   local e = key and O.Model:Get(key)
@@ -339,6 +383,7 @@ function Window:Select(key)
     if not e then return end
   end
   O.db.selected = e.key
+  self:SetMode("instances")
   fillHeader(e)
   win.tabs:SetCount("bosses", e.bosses)
   win.tabs:SetCount("quests", e.quests)
@@ -357,5 +402,7 @@ function Window:Open(key)
   if not win then return end
   win:Show()
   if O.Sidebar then O.Sidebar:Refresh() end
+  if not key and O.db.category == "crafts" and O.Crafts then return O.Crafts:Select(O.db.craft or O.Sidebar.FirstCraft()) end
+  if not key and O.db.category == "zones" and O.Zones then return O.Zones:Select(O.db.zone or O.Sidebar.HereZone()) end
   self:Select(key or O.db.selected)
 end

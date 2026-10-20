@@ -199,8 +199,11 @@ local function fill(_, e)
     about:SetText("WoW Forever added this instance, so no classic guide has it. NorgannonDB learns its bosses, loot "
       .. "and lockout from players running the NorgannonDB Collector.")
   else
-    about:SetText("Bosses, loot and quests come from NorgannonDB, the open database. The map is a hand-drawn "
-      .. "schematic. Something wrong in game? The NorgannonDB Collector notices and reports it.")
+    local map = O.RealMap and O.RealMap.For(e.key)
+      and "The map is the game's own minimap; boss positions are spawn points from the cmangos classic-db (GPL). "
+      or "The map is a hand-drawn schematic. "
+    about:SetText("Bosses, loot and quests come from NorgannonDB, the open database. " .. map
+      .. "Something wrong in game? The NorgannonDB Collector notices and reports it.")
   end
   if e.inst.credits then
     about:SetText(about:GetText() .. " WoW Forever's dungeon data from DungeonJournal by Exehn, with thanks.")

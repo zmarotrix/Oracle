@@ -16,6 +16,8 @@ O.Items = Items
 local KIND_COLOR = { [2] = UI.Hex("ff9a4d"), [4] = UI.Hex("9fd0ff"), [12] = UI.Hex("ffd100"), [9] = UI.Hex("8ef0a0") }
 local OTHER = UI.Hex("d8d0bc")
 local QUEST_ICON = 134400      -- the question mark, while an item's icon isn't known
+-- the 1.15+ clients (WoW Forever, interface 16001) have only C_Item.GetItemInfo; the global is gone
+local GetItemInfo = C_Item and C_Item.GetItemInfo or GetItemInfo
 
 ---What the game knows about an item: name, quality, icon, kind line (or NorgannonDB's fallbacks).
 function Items.Info(id)
@@ -46,10 +48,10 @@ function Items.Info(id)
   }
 end
 
----Which loot filter an item falls under: "gear" (weapons, armour, recipes), "quest", or "other".
+---Which loot filter an item falls under: "gear" (weapons, armour), "quest", or "other" (recipes too).
 function Items.Kind(id)
   local cls = (DB:Get("items", id) or {}).class
-  if cls == 2 or cls == 4 or cls == 9 then return "gear" end
+  if cls == 2 or cls == 4 then return "gear" end   -- recipes are "other" (they sort apart from the gear)
   if cls == 12 then return "quest" end
   return "other"
 end

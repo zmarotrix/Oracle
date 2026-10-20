@@ -1,6 +1,7 @@
--- The sidebar (mockup .side): search over instances, bosses and loot; Dungeons / Raids (Zones
--- and PvP shown greyed: Phase B); Sort Level / Name / Continent; and the list: each instance's
--- name, "zone · N bosses" and its level range in your difficulty colour.
+-- The sidebar (mockup .side): search over instances, bosses and loot; Dungeons / Raids / Zones /
+-- Crafts; Sort Level / Name / Continent; and the list: each instance's name, "zone · N bosses"
+-- and its level range in your difficulty colour. Under Crafts: the professions with your skill,
+-- and the search finds recipes (crafts.lua).
 
 local Core = NorgannonCore
 local O = Oracle
@@ -13,7 +14,7 @@ O.Sidebar = Sidebar
 
 local CATEGORIES = {
   { key = "dungeons", label = "Dungeons" }, { key = "raids", label = "Raids" },
-  { key = "zones", label = "Zones", later = true }, { key = "pvp", label = "PvP", later = true },
+  { key = "zones", label = "Zones" }, { key = "crafts", label = "Crafts" },
 }
 local SORTS = { { "level", "Level" }, { "name", "Name" }, { "continent", "Continent" } }
 local ROW = 38
@@ -24,7 +25,7 @@ local query = ""
 local function accent() return UI.Accent("oracle") end
 
 -------------------------------------------------------------------------------------------
--- Dungeons / Raids / Zones / PvP: four equal cells in one rounded box (mockup .seg)
+-- Dungeons / Raids / Zones / Crafts: four equal cells in one rounded box (mockup .seg)
 -------------------------------------------------------------------------------------------
 
 local function segmented(parent, onSelect)
@@ -101,6 +102,14 @@ end
 -------------------------------------------------------------------------------------------
 
 local function rows()
+  if O.db.category == "zones" and O.Zones then return O.Zones:Entries() end
+  if O.db.category == "crafts" and O.Crafts then
+    local out = {}
+    for _, e in ipairs(O.Crafts:Entries()) do
+      if not e.matches or e.matches > 0 then out[#out + 1] = e end
+    end
+    return out
+  end
   local out = {}
   local raids = O.db.category == "raids"
   for _, e in ipairs(O.Model:All()) do
@@ -137,19 +146,52 @@ function Sidebar:Refresh()
   local items = rows()
   list:SetData(items, true)
   local selected = O.Model:Get(O.db.selected)
+  if O.db.category == "crafts" and O.Crafts then selected = O.Crafts:Entry(O.db.craft) end
+  if O.db.category == "zones" and O.Zones then selected = O.db.zone and O.Zones:Entry(O.db.zone) end
   list:Select(selected)
   local any = false
   for _, item in ipairs(items) do if not item.group then any = true break end end
   emptyText:SetShown(not any)
-  if not any then emptyText:SetText(string.format("No instance matches \"%s\".", query)) end
+  if not any then
+    local what = O.db.category == "crafts" and "No recipe matches" or (O.db.category == "zones" and "No zone matches" or "No instance matches")
+    emptyText:SetText(string.format("%s \"%s\".", what, query))
+  end
 end
 
 function Sidebar:SetSelected(key)
   if not list then return end
+  local zone = type(key) == "string" and key:match("^zone:(%d+)$")
+  if zone then
+    if O.db.category ~= "zones" then
+      O.db.category = "zones"
+      seg:Select("zones", true)
+      Sidebar:Placeholder()
+      self:Refresh()
+    end
+    local e = O.Zones:Entry(tonumber(zone))
+    list:Select(e)
+    for i, item in ipairs(list.items) do
+      if item == e then list:ScrollToIndex(i) break end
+    end
+    return
+  end
+  local craft = type(key) == "string" and key:match("^craft:(%d+)$")
+  if craft then
+    if O.db.category ~= "crafts" then
+      O.db.category = "crafts"
+      seg:Select("crafts", true)
+      Sidebar:Placeholder()
+      self:Refresh()
+    end
+    local e = O.Crafts:Entry(tonumber(craft))
+    list:Select(e)
+    return
+  end
   local e = O.Model:Get(key)
-  if e and e.raid ~= (O.db.category == "raids") then
+  if e and (O.db.category == "crafts" or O.db.category == "zones" or e.raid ~= (O.db.category == "raids")) then
     O.db.category = e.raid and "raids" or "dungeons"
     seg:Select(O.db.category, true)
+    Sidebar:Placeholder()
     self:Refresh()
   end
   list:Select(e)
@@ -163,6 +205,8 @@ function Sidebar:Build(parent)
 
   search = UI.Search(side, "Search instances, bosses, loot…", function(text)
     query = text or ""
+    if O.Crafts then O.Crafts:SetQuery(query) end
+    if O.Zones then O.Zones:SetQuery(query) end
     Sidebar:Refresh()
   end)
   search:ApplyAccent(accent())
@@ -172,6 +216,15 @@ function Sidebar:Build(parent)
 
   seg = segmented(side, function(key)
     O.db.category = key
+    Sidebar:Placeholder()
+    if key == "crafts" then
+      Sidebar:Refresh()
+      return O.Crafts:Select(O.db.craft or Sidebar.FirstCraft())
+    end
+    if key == "zones" then
+      Sidebar:Refresh()
+      return O.Zones:Select(O.db.zone or Sidebar.HereZone())
+    end
     Sidebar:Refresh()
     local first
     for _, item in ipairs(list.items) do if not item.group then first = item break end end
@@ -230,6 +283,21 @@ function Sidebar:Build(parent)
     end,
     updateRow = function(row, e)
       row.name:SetText(e.name)
+      if e.isZone then
+        row.meta:SetText(string.format("%s · %d quests", e.continent or "", e.quests or 0))
+        row.levels:SetText(e.levels and O.Model.LevelText(e) or "–")
+        local c = O.Model.LevelColor(e)
+        row.levels:SetTextColor(c[1], c[2], c[3])
+        return
+      end
+      if e.craft then
+        local count = e.matches and string.format("%d of %d recipes match", e.matches, e.count) or (e.count .. " recipes")
+        row.meta:SetText(count)
+        row.levels:SetText(e.skill and tostring(e.skill) or "–")
+        local c = e.skill and C.gold or C.faint
+        row.levels:SetTextColor(c[1], c[2], c[3])
+        return
+      end
       local where = e.zone or "Unknown"
       local count = e.bosses == 1 and "1 boss" or (e.bosses .. " bosses")
       if e.forever and e.bosses == 0 then count = "being mapped" end
@@ -238,7 +306,11 @@ function Sidebar:Build(parent)
       local c = O.Model.LevelColor(e)
       row.levels:SetTextColor(c[1], c[2], c[3])
     end,
-    onClick = function(e) O.Window:Select(e.key) end,
+    onClick = function(e)
+      if e.craft then return O.Crafts:Select(e.craft) end
+      if e.isZone then return O.Zones:Select(e.zone) end
+      O.Window:Select(e.key)
+    end,
   })
   list:SetPoint("TOPLEFT", 1, -5)
   list:SetPoint("BOTTOMRIGHT", -1, 4)
@@ -249,5 +321,27 @@ function Sidebar:Build(parent)
   emptyText:SetPoint("TOPRIGHT", -12, -12)
   emptyText:SetWordWrap(true)
   emptyText:Hide()
+  Sidebar:Placeholder()
   Sidebar:Refresh()
+end
+
+---The search's hint for the category shown.
+function Sidebar:Placeholder()
+  if search and search.placeholder then
+    local hints = { crafts = "Search recipes…", zones = "Search zones…" }
+    search.placeholder:SetText(hints[O.db.category] or "Search instances, bosses, loot…")
+  end
+end
+
+---The zone you're in (its area id), for the first look at Zones.
+function Sidebar.HereZone()
+  local uiMap = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+  return uiMap and Core.Map.UiMapToArea(uiMap)
+end
+
+---The profession to show first: one you have, else the first.
+function Sidebar.FirstCraft()
+  local entries = O.Crafts:Entries()
+  for _, e in ipairs(entries) do if e.skill then return e.craft end end
+  return entries[1] and entries[1].craft
 end

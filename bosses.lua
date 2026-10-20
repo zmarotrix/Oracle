@@ -161,7 +161,18 @@ local function fillRow(f, row, width)
     local drops = #row.loot == 1 and "1 drop" or (#row.loot .. " drops")
     sub = (row.level and ("Level " .. row.level .. " · ") or "") .. drops
   end
-  if row.unplaced then sub = sub .. " · not on the map" end
+  local R, key = O.RealMap, O.db.selected
+  if R and R.Active(key) then             -- the game map: placed by spawn, maybe on another floor
+    local floor = R.BossFloor(key, row.npc)
+    local m = R.For(key)
+    if not floor then
+      sub = sub .. " · not on the map"
+    elseif #m.floors > 1 then
+      sub = sub .. " · " .. (m.floors[floor].name or ("Floor " .. floor))
+    end
+  elseif row.unplaced then
+    sub = sub .. " · not on the map"
+  end
   if row.note then sub = sub .. " · " .. row.note end
   f.sub:SetText(sub)
   local top = Bosses.TopGear(row, 3)

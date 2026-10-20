@@ -1,7 +1,9 @@
 -- The Loot tab (mockup renderLoot): a boss dropdown ("All bosses" or one), Gear / Quest items /
 -- Other chips, then each boss's own loot under its name: the item row and, on the right, its
 -- drop chance with a thin violet bar ("chance ?" when NorgannonDB doesn't know it yet).
--- Clicking a boss on the map or in the Bosses tab opens its loot here.
+-- Clicking a boss on the map or in the Bosses tab opens its loot here. Each boss's loot folds
+-- under its name (its number on the map, the name, how many items); they start folded, and a boss
+-- chosen in the dropdown, on the map or in the Bosses tab opens unfolded.
 
 local Core = NorgannonCore
 local DB = NorgannonDB
@@ -18,7 +20,9 @@ local ROW = 40
 local CHANCE_W = 70
 local KINDS = { { "gear", "Gear" }, { "quest", "Quest items" }, { "other", "Other" } }
 
-local state = { boss = "all", kinds = { gear = true, quest = true, other = false } }
+local state = { boss = "all", kinds = { gear = true, quest = true, other = false }, open = {} }
+local PLUS = "|TInterface\\Buttons\\UI-PlusButton-Up:16:16:0:0|t  "
+local MINUS = "|TInterface\\Buttons\\UI-MinusButton-Up:16:16:0:0|t  "
 Loot.state = state
 
 ---An item's drop chance from a boss (percent), or nil when unknown.
@@ -36,7 +40,20 @@ local function chanceText(c)
 end
 Loot.ChanceText = chanceText
 
----The rows the list shows: { group = boss name } headers and { npc, item } rows, filtered.
+---A boss's header: the fold button, its number on the map (violet), its name, the item count.
+function Loot.Header(num, name, count, open)
+  local n = num and (UI.Code(VIOLET) .. num .. "|r  ") or ""
+  local items = count == 1 and "1 item" or (count .. " items")
+  return string.format("%s%s%s  %s· %s|r", open and MINUS or PLUS, n, name, UI.Code(C.faint), items)
+end
+
+---Folds or opens a boss's loot (an npc id, a boss name, or "trash").
+function Loot:SetOpen(key, open)
+  state.open[key] = open or nil
+  self.Refresh()
+end
+
+---The rows the list shows: { group, fold, open } headers and { npc, item } rows, filtered.
 function Loot.Rows(key)
   local out = {}
   for _, row in ipairs(O.Bosses.Rows(key)) do
@@ -46,8 +63,12 @@ function Loot.Rows(key)
         if state.kinds[O.Items.Kind(id)] then items[#items + 1] = { npc = row.npc, item = id } end
       end
       if #items > 0 then
-        out[#out + 1] = { group = row.name }
-        for _, it in ipairs(items) do out[#out + 1] = it end
+        -- one boss chosen: its loot shows; all bosses: each folded unless opened
+        local open = state.boss ~= "all" or state.open[row.npc]
+        out[#out + 1] = { group = Loot.Header(row.num, row.name, #items, open), fold = row.npc, open = open }
+        if open then
+          for _, it in ipairs(items) do out[#out + 1] = it end
+        end
       end
     end
   end
@@ -59,8 +80,11 @@ function Loot.Rows(key)
       if state.kinds[O.Items.Kind(id)] then items[#items + 1] = { item = id, trash = true } end
     end
     if #items > 0 then
-      out[#out + 1] = { group = "Trash" }
-      for _, it in ipairs(items) do out[#out + 1] = it end
+      local open = state.open.trash
+      out[#out + 1] = { group = Loot.Header(nil, "Trash", #items, open), fold = "trash", open = open }
+      if open then
+        for _, it in ipairs(items) do out[#out + 1] = it end
+      end
     end
   end
   return out
@@ -128,7 +152,7 @@ local function build(frame)
       -- the item parts go on the content frame, which the list hides on boss-name rows
       content.rightInset = CHANCE_W + 12
       O.Items.Build(content)
-      row.item = content
+      row.itemFrame = content          -- not row.item: UI.List keeps the row's data there
       row.chance = UI.Text(content, "body", 12, C.muted)
       row.chance:SetPoint("TOPRIGHT", content, "RIGHT", -8, 10)
       row.chance:SetJustifyH("RIGHT")
@@ -142,12 +166,16 @@ local function build(frame)
       row.chanceBar.fillFrame:SetPoint("BOTTOMLEFT")
       row.chanceBar.fill = UI.Pill(row.chanceBar.fillFrame, 3, "ARTWORK", 0)
       row.chanceBar.fill:SetColor(VIOLET, 1)
-      row.groupLabel:SetFontObject(UI.Font("title", 12))
-      row.groupLabel:SetTextColor(C.faint[1], C.faint[2], C.faint[3])
+      row.groupLabel:SetFontObject(UI.Font("title", 15))
+      row.groupLabel:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+      row.groupLabel:SetShadowOffset(1, -1)          -- (UI.Glow can't: its copies don't follow inline icons, colours or a stretched label)
+      row.groupLabel:SetShadowColor(0, 0, 0, 1)
       O.Items.Hook(row)
     end,
+    onGroupClick = function(group) Loot:SetOpen(group.fold, not group.open) end,
+    groupBand = true,
     updateRow = function(row, it)
-      local info = O.Items.Fill(row.item, it.item)
+      local info = O.Items.Fill(row.itemFrame, it.item)
       row.itemId, row.itemLink = it.item, info.link
       local c = Loot.Chance(it.npc, it.item)
       row.chance:SetText(chanceText(c))
@@ -171,10 +199,11 @@ local function fill() refresh() end
 -- a boss clicked on the map or in the Bosses tab: its loot
 O:Listen("FOCUS", "loot", function(_, npc)
   state.boss = npc
+  state.open[npc] = true
   if O.Window.frame and O.Window.frame.tabs then O.Window.frame.tabs:Select("loot") end
 end)
 -- another instance: back to every boss
-O:Listen("SELECTED", "loot", function() state.boss = "all" end)
+O:Listen("SELECTED", "loot", function() state.boss, state.open = "all", {} end)
 O:Listen("ITEMS_LOADED", "loot", function() if list and pane:IsShown() then list:Refresh() end end)
 
 O.Window:RegisterPane("loot", build, fill)

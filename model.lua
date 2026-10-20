@@ -37,6 +37,8 @@ local function continentOf(area)
   end
 end
 
+Model.ContinentOf = continentOf
+
 local function build()
   entries, byKey = {}, {}
   for _, key in ipairs(Core.DB:InstanceKeys()) do

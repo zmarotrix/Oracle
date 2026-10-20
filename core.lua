@@ -8,10 +8,10 @@ local DB = NorgannonDB
 Oracle = { addonName = ADDON or "Oracle" }
 local O = Oracle
 
-if not (Core and Core:Require(1, 13)) or not (DB and DB:RequireSchema(1, 3)) then
+if not (Core and Core:Require(1, 14)) or not (DB and DB:RequireSchema(1, 4)) then
   O.disabled = true
   C_Timer.After(5, function()
-    print("|cffb48cffOracle|r needs NorgannonDB 1.3 and NorgannonDB Core 1.13 or newer; it is turned off.")
+    print("|cffb48cffOracle|r needs NorgannonDB 1.4 and NorgannonDB Core 1.14 or newer; it is turned off.")
   end)
   return
 end
@@ -24,10 +24,19 @@ function O:Print(msg) Core:Print(msg, self.PREFIX) end
 -------------------------------------------------------------------------------------------
 
 local DEFAULTS = {
-  category = "dungeons",   -- the sidebar's Dungeons / Raids
+  category = "dungeons",   -- the sidebar's Dungeons / Raids / Crafts
+  craft = nil,             -- the profession last shown (skill line id)
+  recipe = nil,            -- the recipe last shown (spell id)
+  craftFilter = "all",     -- the ladder's All / Learnable now / Skill-ups
+  zone = nil,              -- the zone last shown (area id)
+  -- zonePins[kind] = false: that kind of pin hidden on zone maps
+  zoneTab = "items",       -- a zone's Items / About
+  zoneKind = "gear",       -- the zone's items: Gear / Recipes / Everything
+  -- zoneSources[source] = false: quest rewards, drops or vendors left out; zoneWorldDrops: shown
   sort = "level",          -- Level / Name / Continent
   selected = nil,          -- the instance key last shown
   tab = "info",
+  mapView = "real",        -- the map panel: "real" (the game's minimap tiles, where built) or "schematic"
   scale = 1,               -- on top of the fit-to-screen scale
   opacity = 1,
   locked = false,
@@ -60,7 +69,7 @@ function O:Listen(message, owner, fn) Core:Listen("ORACLE_" .. message, owner, f
 -------------------------------------------------------------------------------------------
 
 ---The instance you're standing in, if NorgannonDB knows it (its first wing for wing instances).
--- Wings that share one game map (Scarlet Monastery, Dire Maul, Blackrock Spire, Stratholme):
+-- Wings that share one game map (Scarlet Monastery, Dire Maul, Blackrock Spire):
 -- the sub-zone names you see inside each one
 local WING_PLACES = {
   ["sm-graveyard"] = { "Graveyard", "Chamber of Atonement", "Forlorn Cloister", "Honor's Tomb" },
@@ -72,8 +81,6 @@ local WING_PLACES = {
   ["dm-north"] = { "Gordok's Seat", "Halls of Destruction" },
   ["lbrs"] = { "Hordemar City", "Mok'Doom", "Tazz'Alaor", "Skitterweb Tunnels", "The Storehouse", "Chamber of Battle" },
   ["ubrs"] = { "Dragonspire Hall", "Hall of Binding", "The Rookery", "Hall of Blackhand", "Blackrock Stadium", "The Furnace", "Spire Throne" },
-  ["strat-live"] = { "King's Square", "Market Row", "Crusaders' Square", "The Scarlet Bastion", "The Hall of Lights", "The Hoard" },
-  ["strat-undead"] = { "Elders' Square", "The Gauntlet", "Slaughter Square", "The Slaughter House" },
 }
 O.WING_PLACES = WING_PLACES
 
@@ -158,6 +165,8 @@ SlashCmdList["ORACLE"] = function(msg)
     O:Toggle()
   elseif msg == "settings" or msg == "options" then
     O:OpenSettings()
+  elseif msg == "edit" then
+    O.MapEdit:Toggle()       -- the map editor (mapedit.lua)
   else
     -- /oracle deadmines, /oracle scarlet: the first instance whose name or key matches
     for _, key in ipairs(Core.DB:InstanceKeys()) do

@@ -9,7 +9,8 @@
 local O = Oracle
 if O.disabled then return end
 
-local function E(x, y, label) return { key = "entrance", kind = "entrance", label = label or "Entrance", x = x, y = y } end
+-- key: "entrance", or "entrance2", ... for another way in (the sheet's entrances[2], ...)
+local function E(x, y, label, key) return { key = key or "entrance", kind = "entrance", label = label or "Entrance", x = x, y = y } end
 local function P(key, x, y, label, note) return { key = key, kind = "poi", label = label, x = x, y = y, note = note } end
 local function B(npc, x, y, note) return { npc = npc, x = x, y = y, note = note } end
 
@@ -92,10 +93,10 @@ O.Layouts = {
       { 7271, 7795 }, { "pyramid", 7796 }, { "pyramid", 7275 }, { 7796, 7267 }, { 7275, 7267 } },
   },
   ["maraudon"] = {
-    nodes = { E(50, 94), B(13282, 16, 74, "Purple"), B(12258, 18, 50, "Purple"), B(12236, 30, 30, "Purple"),
+    nodes = { E(82, 94, "Orange entrance"), E(16, 94, "Purple entrance", "entrance2"), B(13282, 16, 74, "Purple"), B(12258, 18, 50, "Purple"), B(12236, 30, 30, "Purple"),
       B(13601, 82, 74, "Orange"), B(12225, 80, 48, "Orange"), P("inner", 52, 46, "Inner Maraudon"),
       B(12203, 44, 28), B(13596, 62, 26), B(12201, 52, 10) },
-    edges = { { "entrance", 13282 }, { 13282, 12258 }, { 12258, 12236 }, { "entrance", 13601 }, { 13601, 12225 },
+    edges = { { "entrance2", 13282 }, { 13282, 12258 }, { 12258, 12236 }, { "entrance", 13601 }, { 13601, 12225 },
       { 12236, "inner" }, { 12225, "inner" }, { "inner", 12203 }, { "inner", 13596 }, { 12203, 12201 }, { 13596, 12201 } },
   },
   ["sunken-temple"] = {
@@ -143,16 +144,15 @@ O.Layouts = {
     edges = { { "entrance", 14326 }, { 14326, 14322 }, { 14322, 14321 }, { 14322, 14323 }, { 14323, 14325 },
       { 14325, 14324 }, { 14324, 11501 } },
   },
-  ["strat-live"] = {
-    nodes = { E(10, 88, "Main Gate"), B(10516, 26, 66), B(10808, 40, 82), B(11032, 36, 44), B(10997, 56, 62),
-      B(10811, 70, 40), B(10813, 86, 16, "Grand Crusader Dathrohan") },
+  -- one instance: the Scarlet side from the main gate (left), the Undead side from the service entrance (right)
+  ["stratholme"] = {
+    nodes = { E(8, 90, "Main Gate"), B(10516, 14, 68), B(10808, 24, 84), B(11032, 20, 46), B(10997, 30, 64),
+      B(10811, 36, 40), B(10813, 44, 16, "Grand Crusader Dathrohan"),
+      E(92, 90, "Service Entrance", "entrance2"), B(10435, 62, 70), B(10436, 64, 44), B(10437, 72, 24), B(10438, 80, 56),
+      B(10439, 86, 40, "After the ziggurats"), B(10440, 92, 16) },
     edges = { { "entrance", 10516 }, { "entrance", 10808 }, { 10516, 11032 }, { 10808, 10997 }, { 11032, 10811 },
-      { 10997, 10811 }, { 10811, 10813 } },
-  },
-  ["strat-undead"] = {
-    nodes = { E(10, 86, "Service Entrance"), B(10435, 22, 66), B(10436, 36, 40), B(10437, 50, 22), B(10438, 56, 54),
-      B(10439, 72, 44, "After the ziggurats"), B(10440, 88, 18) },
-    edges = { { "entrance", 10435 }, { 10435, 10436 }, { 10435, 10437 }, { 10435, 10438 }, { 10436, 10439 },
+      { 10997, 10811 }, { 10811, 10813 },
+      { "entrance2", 10435 }, { 10435, 10436 }, { 10435, 10437 }, { 10435, 10438 }, { 10436, 10439 },
       { 10437, 10439 }, { 10438, 10439 }, { 10439, 10440 } },
   },
   ["scholomance"] = {

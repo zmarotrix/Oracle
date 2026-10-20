@@ -136,8 +136,11 @@ local function newNode()
   f:SetScript("OnLeave", function() Schematic:SetHot(nil) end)
   f:SetScript("OnClick", function(self)
     local node = self.node
+    if O.MapEdit and O.MapEdit.active then return end    -- the map editor drags and selects instead
     if node and node.npc then O:Send("FOCUS", node.npc) end
   end)
+  f:SetScript("OnMouseDown", function(self, button) if O.MapEdit then O.MapEdit:NodeDown(self, button) end end)
+  f:SetScript("OnMouseUp", function(self, button) if O.MapEdit then O.MapEdit:NodeUp(self, button) end end)
   return f
 end
 
@@ -314,10 +317,23 @@ local function build(map)
   Schematic.canvas, Schematic.legendFrame, Schematic.stamp = canvas, legendFrame, stamp
 end
 
----Draws an instance's schematic on the map panel; returns false when it has no layout.
-function Schematic:Draw(map, key)
+---Draws an instance's schematic on the map panel; returns false when it has no layout. overReal:
+---the game map is drawn underneath (O.RealMap), so the nodes stand where the game puts them
+---(bosses at their spawns, on the floor shown; ones without a known spot are left off), the
+---bosses the layout leaves out join them with their letters, and the dotted route and the
+---"Schematic" stamp stay hidden.
+function Schematic:Draw(map, key, overReal)
   if not canvas then build(map) end
   local legend = self.Legend(key)
+  if legend and overReal then
+    local nodes = {}
+    for _, node in ipairs(legend.nodes) do nodes[#nodes + 1] = node end
+    for _, x in ipairs(legend.extra) do
+      x.num, x.key = x.letter, x.npc
+      nodes[#nodes + 1] = x
+    end
+    legend = { nodes = nodes, extra = {}, edges = {} }
+  end
   for _, f in ipairs(nodePool) do f:Hide() f.node = nil end
   for _, d in ipairs(dotPool) do d:Hide() end
   if not legend then
@@ -326,6 +342,8 @@ function Schematic:Draw(map, key)
     return false
   end
   canvas:Show()
+  canvas.paths:SetShown(not overReal)
+  stamp:SetShown(not overReal)
   current = { key = key, legend = legend, byKey = {} }
   for _, node in ipairs(legend.nodes) do
     if node.npc then
@@ -335,7 +353,13 @@ function Schematic:Draw(map, key)
     end
   end
   local w, h = map:GetWidth() or 0, map:GetHeight() or 0
-  local function pos(node) return node.x / 100 * w, node.y / 100 * h end
+  local view = O.View
+  local function pos(node)
+    local x, y
+    if overReal then x, y = O.RealMap:NodePos(key, node) else x, y = node.x / 100 * w, node.y / 100 * h end
+    if x and view then x, y = view.ToView(x, y) end   -- zoomed or moved: the markers keep their size
+    return x, y
+  end
 
   -- paths under the nodes
   local nd = 0
@@ -358,18 +382,23 @@ function Schematic:Draw(map, key)
   end
 
   -- the nodes
-  for i, node in ipairs(legend.nodes) do
-    local f = nodePool[i] or newNode()
-    nodePool[i] = f
-    f.node = node
-    f:SetFrameLevel(canvas:GetFrameLevel() + 10)
-    paint(f, node, false)
+  local shown = 0
+  for _, node in ipairs(legend.nodes) do
     local x, y = pos(node)
-    f:ClearAllPoints()
-    f:SetPoint("CENTER", canvas, "TOPLEFT", x, -y)
-    f:Show()
+    if x then
+      shown = shown + 1
+      local f = nodePool[shown] or newNode()
+      nodePool[shown] = f
+      f.node = node
+      f:SetFrameLevel(canvas:GetFrameLevel() + 10)
+      paint(f, node, Schematic.hot ~= nil and node.key == Schematic.hot)   -- a redraw keeps the hover
+      f.sub:SetShown(not overReal)    -- over the game map: names only, the levels are in the boss list
+      f:ClearAllPoints()
+      f:SetPoint("CENTER", canvas, "TOPLEFT", x, -y)
+      f:Show()
+    end
   end
-  Schematic.stats = { nodes = #legend.nodes, dots = nd }
+  Schematic.stats = { nodes = shown, dots = nd }
   return true
 end
 
