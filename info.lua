@@ -1,6 +1,6 @@
 -- The Info tab (mockup renderInfo): the facts (location, level range, group size, bosses,
--- quests, keys and attunement, lockout), "Getting there" (show the entrance on the map, plan a
--- run with Foresight) and "About this data". Unknown facts are said plainly, in the gap colour.
+-- quests, keys and attunement, lockout), "Getting there" (show the entrance on the map)
+-- and "About this data". Unknown facts are said plainly, in the gap colour.
 
 local Core = NorgannonCore
 local O = Oracle
@@ -88,7 +88,7 @@ end
 -- The pane
 -------------------------------------------------------------------------------------------
 
-local pane, rows, heading1, heading2, about, showButton, planButton
+local pane, rows, heading1, heading2, about, showButton
 
 local function button(parent, text, markKey, onClick)
   local b = UI.Button(parent, text, markKey == "clairvoyance" and "accent" or "quiet", onClick)
@@ -132,14 +132,6 @@ local function build(frame)
   showButton = button(pane, "Show entrance on map", "clairvoyance", function()
     Info.ShowEntrance(O.Model:Get(O.db.selected))
   end)
-  planButton = button(pane, "Plan a run", "foresight", function() end)
-  planButton:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:AddLine("Plan a run", 1, 1, 1)
-    GameTooltip:AddLine("Foresight, the suite's planner, will plan runs here.", C.muted[1], C.muted[2], C.muted[3])
-    GameTooltip:Show()
-  end)
-  planButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
   about = UI.Text(pane, "body", 13, C.faint)
   about:SetWordWrap(true)
   about:SetJustifyH("LEFT")
@@ -185,9 +177,6 @@ local function fill(_, e)
   showButton:SetPoint("TOPLEFT", 10, y)
   showButton:SetEnabled(e.entrance ~= nil)
   showButton:SetAlpha(e.entrance and 1 or .45)
-  planButton:ClearAllPoints()
-  planButton:SetPoint("LEFT", showButton, "RIGHT", 6, 0)
-  planButton:SetAlpha(Core:AddonState("foresight") == "loaded" and 1 or .45)
   y = y - 24 - 16
   heading2:ClearAllPoints()
   heading2:SetPoint("TOPLEFT", 10, y)

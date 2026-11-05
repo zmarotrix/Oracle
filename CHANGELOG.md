@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The Info tab's greyed "Plan a run" button is gone: the suite's planner is shelved.
+
 ## 0.10.0, 2026-10-20
 
 Requires NorgannonDB 1.4 and NorgannonDB Core 1.14.
