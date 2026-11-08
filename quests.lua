@@ -1,7 +1,7 @@
 -- The Quests tab (mockup renderQuests): one card per quest that sends you to the instance, by
 -- level: the level and name in your difficulty colour, "From <giver> · zone (x, y) · requires
 -- level N" (or where to pick it up), "After: <prerequisites>", the rewards in two columns, then
--- "Track in Clairvoyance" (shows the giver on your map), "Archivum", and the XP.
+-- "Track in Clairvoyance" (shows the giver on your map), and the XP.
 --
 -- Quests that follow from each other are one questline: a heading that names where it starts and
 -- ends (and the earlier quests it hangs on, when those don't belong to this instance), then its
@@ -370,14 +370,6 @@ local function newCard()
     if result == "noclairvoyance" then O:Print("Clairvoyance shows where quests start; it isn't loaded.")
     elseif result == "nostarter" then O:Print("NorgannonDB doesn't know who starts this quest yet.") end
   end)
-  f.archivum = markButton(f, "Archivum", "quiet", "archivum", nil, function() end)
-  f.archivum:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:AddLine("Archivum", 1, 1, 1)
-    GameTooltip:AddLine("The suite's encyclopedia will open this quest's page.", C.muted[1], C.muted[2], C.muted[3])
-    GameTooltip:Show()
-  end)
-  f.archivum:SetScript("OnLeave", function() GameTooltip:Hide() end)
   f.xp = UI.Text(f, "body", 12, C.faint)
   f.xp:SetJustifyH("RIGHT")
   return f
@@ -466,9 +458,6 @@ local function fillCard(f, card, width)
   local inLog = Core.Player:HasQuest(card.id)
   f.track.label:SetText(inLog and "In your quest log" or "Track in Clairvoyance")
   f.track:SetAlpha((inLog or not card.starter or Core:AddonState("clairvoyance") ~= "loaded") and .5 or 1)
-  f.archivum:ClearAllPoints()
-  f.archivum:SetPoint("LEFT", f.track, "RIGHT", 6, 0)
-  f.archivum:SetAlpha(Core:AddonState("archivum") == "loaded" and 1 or .5)
   f.xp:ClearAllPoints()
   f.xp:SetPoint("RIGHT", f, "TOPRIGHT", -CARD_PAD, y - 11)
   f.xp:SetText(card.xp and (BreakUpLargeNumbers and BreakUpLargeNumbers(card.xp) or tostring(card.xp)) .. " XP" or "")

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.1, 2026-11-07
+
+- The quest card no longer shows a greyed-out "Archivum" button: Archivum, the database browser, is shelved.
+
 ## 0.11.0, 2026-11-07
 
 - Built on NorgannonDB Core 1.20's `Core:NewAddon`: the same commands, window and settings. `/oracle help` lists the
