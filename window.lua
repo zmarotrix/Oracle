@@ -386,7 +386,7 @@ function Window:Select(key)
   self:SetMode("instances")
   fillHeader(e)
   win.tabs:SetCount("bosses", e.bosses)
-  win.tabs:SetCount("quests", e.quests)
+  win.tabs:SetCount("quests", O.Quests and O.Quests.Visible(e.key) or e.quests)
   local loot = 0
   for _, b in ipairs(e.inst.bosses or {}) do loot = loot + #(b.loot or {}) end
   win.tabs:SetCount("loot", loot)

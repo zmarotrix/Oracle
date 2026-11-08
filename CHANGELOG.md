@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Questlines**: on the Quests tab, quests that follow from each other are grouped under a
+  heading with their first and last quest, numbered on a rail, with the earlier quests they hang
+  on named when those aren't filed under the instance.
+- **Faction**: a quest only one side can take has a stripe and a pill in that side's colour (also
+  worked out from who gives it, when its race mask doesn't say). A filter shows your side, the
+  other or all; the tab counts what shows, and quests you can't take are dimmed.
 - The Info tab's greyed "Plan a run" button is gone: the suite's planner is shelved.
 
 ## 0.10.0, 2026-10-20
