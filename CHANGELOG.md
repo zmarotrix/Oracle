@@ -1,7 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.11.0, 2026-11-07
 
+- Built on NorgannonDB Core 1.20's `Core:NewAddon`: the same commands, window and settings. `/oracle help` lists the
+  commands; `/oracle <name>` still opens an instance.
+- The "Show the minimap button" setting is gone: NorgannonDB > Minimap pins any add-on.
+- Settings asked for in combat open when the fight ends.
 - **Questlines**: on the Quests tab, quests that follow from each other are grouped under a
   heading with their first and last quest, numbered on a rail, with the earlier quests they hang
   on named when those aren't filed under the instance.

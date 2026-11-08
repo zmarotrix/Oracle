@@ -42,9 +42,6 @@ Core:OnLogin(function()
     end
   end } })
 
-  list:Toggle("Show the minimap button", "Oracle is also in the game's addon menu and opens with /oracle.",
-    function() return Core.MinimapButton:IsShown("oracle") end,
-    function(on) Core.MinimapButton:SetShown("oracle", on) end)
 
   list:Header("Opening")
   list:Toggle("Open when I enter a dungeon or raid", "Oracle always opens on the instance you're in; this also opens it as you enter.",
@@ -61,7 +58,7 @@ Core:OnLogin(function()
 
   page:SetScript("OnShow", function() list:Refresh() end)
   O.settingsPage, O.settingsList = page, list
-  O.settingsCategory = Core:AddSettingsPage(page, "Oracle")
+  O:AddSettingsPage(page)
 
   -- Oracle's hot paths for /norg perf (wrapped only while measuring)
   local function perf(label, tbl, method) Core:RegisterPerf("Oracle: " .. label, tbl, method, "oracle") end
@@ -70,11 +67,3 @@ Core:OnLogin(function()
   perf("instance list", O.Sidebar, "Refresh")
   perf("tooltip lines", O.Links, "TooltipLine")
 end)
-
-function O:OpenSettings()
-  if self.settingsCategory and Settings and Settings.OpenToCategory then
-    Settings.OpenToCategory(self.settingsCategory:GetID())
-  else
-    Core:OpenSettings()
-  end
-end
