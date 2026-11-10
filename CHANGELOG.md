@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.3 (2026-11-09)
+
+- Asks for Norgannon Core 1.21 or newer, the first Core with everything it needs; the map features from Core 1.28 switch on by themselves when Core has them. An older Core now gets a clear "update Norgannon Core" message instead of errors.
+
 ## 0.11.2, 2026-11-09
 
 - **Showing an instance's entrance no longer opens the world map for you.** Opening Blizzard's map from an add-on taints
