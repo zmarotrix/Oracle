@@ -7,7 +7,7 @@ local DB = NorgannonDB
 
 if not (Core and Core.NewAddon) then
   Oracle = { disabled = true }
-  print("Oracle needs NorgannonDB Core 1.21 or newer; it is turned off.")
+  print("Oracle needs Norgannon Core 1.21 or newer; it is turned off.")
   return
 end
 
