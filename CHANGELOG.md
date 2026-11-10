@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.2, 2026-11-09
+
+- **Showing an instance's entrance no longer opens the world map for you.** Opening Blizzard's map from an add-on taints
+  its quest pins for the session, so opening the map or quest log later fails ("tried to call the protected function
+  Button:SetPassThroughButtons()"). The entrance pulses if the map is already open on its zone; otherwise Oracle
+  tells you which zone to open, and it pulses when you open the map there.
+
 ## 0.11.1, 2026-11-07
 
 - The quest card no longer shows a greyed-out "Archivum" button: Archivum, the database browser, is shelved.

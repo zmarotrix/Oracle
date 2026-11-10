@@ -116,11 +116,14 @@ function Info.ShowEntrance(e)
     layer = 6, title = e.name, compass = "oracle.entrance", highlight = "oracle.entrance",
     tooltip = function(_, tt) tt:AddLine(e.name, 1, 1, 1) tt:AddLine("Entrance", C.muted[1], C.muted[2], C.muted[3]) end }
   Core.Map:SetPins("oracle.entrance", { pin })
-  local uiMap = Core.Map.AreaToUiMap(en.area)
-  if uiMap then
-    if OpenWorldMap then OpenWorldMap(uiMap) elseif WorldMapFrame then WorldMapFrame:Show() WorldMapFrame:SetMapID(uiMap) end
+  -- never opens or switches Blizzard's map (that taints its quest pins for the session, see
+  -- Core.Map:Reveal): the entrance pulses now if the map is open there, else when you open it there
+  if Core.Map.Reveal then
+    local now, zone = Core.Map:Reveal(en.area, "oracle.entrance")
+    if not now then O:Print(zone and ("Open your map (M): the entrance is in " .. zone .. ".") or "Open your map (M) to see the entrance.") end
+  else
+    Core.Map:Pulse("oracle.entrance")
   end
-  Core.Map:Pulse("oracle.entrance")
   return true
 end
 
