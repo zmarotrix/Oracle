@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.1, 2026-11-16
+
+- Fixed an error when clicking a quest: its objective text now shows in the Inspector.
+
 ## 0.13.0 (2026-11-16): a new design (beta)
 
 Oracle is redesigned around what you look things up for: loot, professions, the quests for a dungeon and a zone's
