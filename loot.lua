@@ -196,11 +196,10 @@ end
 
 local function fill() refresh() end
 
--- a boss clicked on the map or in the Bosses tab: its loot
+-- a boss clicked on the map: its loot here (Oracle's Dungeons space decides what shows)
 O:Listen("FOCUS", "loot", function(_, npc)
   state.boss = npc
   state.open[npc] = true
-  if O.Window.frame and O.Window.frame.tabs then O.Window.frame.tabs:Select("loot") end
 end)
 -- another instance: back to every boss
 O:Listen("SELECTED", "loot", function() state.boss, state.open = "all", {} end)

@@ -426,11 +426,12 @@ local function buildDetail(parent)
   return detail
 end
 
----Draws a recipe in the detail column.
-function Crafts:ShowRecipe(id)
+---Draws a recipe on a sheet (between its Begin and End): what it makes, its skill-up colours, the
+---specialization it needs, the reagents and where they come from, where to learn it, what uses it.
+---onRecipe(id) opens another recipe (a crafted reagent's); onItem(id) opens an item.
+function Crafts.DrawRecipe(sheet, id, onRecipe, onItem)
   local rec = id and Core.DB:Recipe(id)
-  sheet:Begin(not rec and "Pick a recipe on the ladder to see what it takes and where to learn it." or nil)
-  if not rec then return sheet:End() end
+  if not rec then return end
 
   local mine = Core.Player:GetSkill(rec.skill)
   local color = Core.DB.RecipeColor(rec, mine)
@@ -441,17 +442,22 @@ function Crafts:ShowRecipe(id)
   sheet:Text(string.format("%s %d   %s %d   %s %d   %s %d",
     UI.Code(COLORS.orange) .. "Orange|r", l[1], UI.Code(COLORS.yellow) .. "Yellow|r", l[2],
     UI.Code(COLORS.green) .. "Green|r", l[3], UI.Code(COLORS.grey) .. "Grey|r", l[4]), 13, C.text)
+  local spec = Core.DB.RecipeSpec and Core.DB:RecipeSpec(id)
+  if spec then
+    local name = Core.In(C_Spell, "GetSpellName", spec) or Core.Global("GetSpellInfo", spec) or "a specialization"
+    sheet:Text("Needs " .. UI.Code(C.warn) .. name .. "|r", 13, C.text)
+  end
 
   if rec.item then
     sheet:Heading("Makes")
     local info = O.Items.Info(rec.item)
-    sheet:Item(rec.item, info.kind ~= "" and info.kind or "Crafted item", rec.count)
+    sheet:Item(rec.item, info.kind ~= "" and info.kind or "Crafted item", rec.count, onItem and function() onItem(rec.item) end or nil)
   end
 
   sheet:Heading("Reagents")
   for _, r in ipairs(rec.reagents) do
     local made = Core.DB:CraftedBy(r[1])[1]
-    local open = made and made ~= id and function() Crafts:SelectRecipe(made) end or nil   -- a crafted reagent: its recipe
+    local open = made and made ~= id and onRecipe and function() onRecipe(made) end or nil   -- a crafted reagent: its recipe
     local row = sheet:Item(r[1], string.format("×%d  ·  %s", r[2], Crafts.SourceLine(r[1])), r[2], open)
     -- nothing to show on a map for what disenchanting gives (the greens that give it drop everywhere)
     if Core.DB:DisenchantedFrom(r[1]) then row.track:Hide() end
@@ -498,6 +504,12 @@ function Crafts:ShowRecipe(id)
     end
     sheet:Text(table.concat(names, ", "), 13, C.muted)
   end
+  end
+
+---Draws a recipe in the old detail column.
+function Crafts:ShowRecipe(id)
+  sheet:Begin(not (id and Core.DB:Recipe(id)) and "Pick a recipe on the ladder to see what it takes and where to learn it." or nil)
+  Crafts.DrawRecipe(sheet, id, function(other) Crafts:SelectRecipe(other) end)
   sheet:End()
 end
 

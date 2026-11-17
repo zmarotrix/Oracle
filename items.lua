@@ -121,3 +121,47 @@ Core:On("GET_ITEM_INFO_RECEIVED", "oracle.items", function()
     O:Send("ITEMS_LOADED")
   end)
 end)
+
+-------------------------------------------------------------------------------------------
+-- For you: can your class use it, and at what level (the "for me" lens, docs/oracle-redesign.md 3.3)
+-------------------------------------------------------------------------------------------
+
+-- armour (class 4) and weapon (class 2) subclasses each class can use; plate and mail come at 40
+local ARMOR = {
+  WARRIOR = { 1, 2, 3, 6, late = { [4] = 40 } }, PALADIN = { 1, 2, 3, 6, late = { [4] = 40 } },
+  HUNTER = { 1, 2, late = { [3] = 40 } }, SHAMAN = { 1, 2, 6, late = { [3] = 40 } },
+  ROGUE = { 1, 2 }, DRUID = { 1, 2 }, PRIEST = { 1 }, MAGE = { 1 }, WARLOCK = { 1 },
+}
+local WEAPON = {
+  WARRIOR = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 13, 15, 16, 18 },
+  PALADIN = { 0, 1, 4, 5, 6, 7, 8 },
+  HUNTER = { 0, 1, 2, 3, 6, 7, 8, 10, 13, 15, 16, 18 },
+  ROGUE = { 2, 3, 4, 7, 13, 15, 16, 18 },
+  PRIEST = { 4, 10, 15, 19 }, MAGE = { 7, 10, 15, 19 }, WARLOCK = { 7, 10, 15, 19 },
+  SHAMAN = { 0, 1, 4, 5, 10, 13, 15 }, DRUID = { 4, 5, 10, 13, 15 },
+}
+local WEAPON_NAMES = { [2] = "bows", [3] = "guns", [6] = "polearms", [10] = "staves", [13] = "fist weapons",
+  [15] = "daggers", [16] = "thrown weapons", [18] = "crossbows", [19] = "wands", [0] = "axes", [1] = "two-handed axes",
+  [4] = "maces", [5] = "two-handed maces", [7] = "swords", [8] = "two-handed swords" }
+local ARMOR_NAMES = { [1] = "cloth", [2] = "leather", [3] = "mail", [4] = "plate", [6] = "shields" }
+
+local function has(list, v) for _, x in ipairs(list) do if x == v then return true end end return false end
+
+---Whether you can use a weapon or piece of armour: { ok, later = level, why } or nil for other items.
+function Items.ForYou(id, class, level)
+  local record = DB:Get("items", id)
+  if not record or (record.class ~= 2 and record.class ~= 4) then return nil end
+  class = class or Core.Player.class or select(2, UnitClass("player"))
+  level = level or Core.Player.level or UnitLevel("player") or 1
+  local sub = record.subClass
+  if record.class == 4 and sub and sub >= 1 and sub <= 6 and ARMOR[class] then
+    local a = ARMOR[class]
+    local at = a.late and a.late[sub]
+    if not has(a, sub) and not at then return { ok = false, why = (ARMOR_NAMES[sub] or "this armour") .. " isn't for your class" } end
+    if at and level < at then return { ok = true, later = math.max(at, record.requiredLevel or 0) } end
+  elseif record.class == 2 and sub and WEAPON_NAMES[sub] and WEAPON[class] and not has(WEAPON[class], sub) then
+    return { ok = false, why = "your class can't use " .. WEAPON_NAMES[sub] }
+  end
+  if record.requiredLevel and record.requiredLevel > level then return { ok = true, later = record.requiredLevel } end
+  return { ok = true }
+end

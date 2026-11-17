@@ -1,5 +1,6 @@
--- Oracle: every dungeon and raid in WoW Forever, built on NorgannonDB and NorgannonDB_Core.
--- Plan: docs/oracle-v1.md in the suite workspace; the look: design/suite/oracle.html.
+-- Oracle: look up loot, professions and quests in WoW Forever, built on NorgannonDB and NorgannonDB_Core.
+-- The redesign (0.13): docs/oracle-redesign.md in the suite workspace; the look: design/suite/oracle-redesign.html.
+-- (Oracle 0.12, the Atlas-style one, is archived: tag v0.12.1, branch archive/oracle-1.)
 
 local ADDON = ...
 local Core = NorgannonCore
@@ -14,12 +15,25 @@ end
 Oracle = {}
 local O = Oracle
 
+-- Icons as inline textures: the game's fonts have no ▸ ▾ ★ ✓ glyphs, so text never uses them
+O.ICON = {
+  folded = "|TInterface\Buttons\UI-PlusButton-Up:14:14:0:-1|t",
+  open = "|TInterface\Buttons\UI-MinusButton-Up:14:14:0:-1|t",
+  star = "|TInterface\TargetingFrame\UI-RaidTargetingIcon_1:12:12:0:0|t",
+  check = "|TInterface\RaidFrame\ReadyCheck-Ready:12:12:0:0|t",
+  cross = "|TInterface\RaidFrame\ReadyCheck-NotReady:12:12:0:0|t",
+  branch = "- ",
+}
+
 -------------------------------------------------------------------------------------------
 -- Saved settings (account-wide)
 -------------------------------------------------------------------------------------------
 
 O.DEFAULTS = {
-  category = "dungeons",   -- the sidebar's Dungeons / Raids / Crafts
+  space = "dungeons",      -- the space shown last: dungeons, professions, zones
+  view = "loot",           -- an instance's view: loot, quests, map, info
+  raids = nil,             -- the Dungeons & Raids navigator shows raids
+  category = "dungeons",   -- (Oracle 0.12's sidebar; kept for the hosted Crafts and Zones pages)
   craft = nil,             -- the profession last shown (skill line id)
   recipe = nil,            -- the recipe last shown (spell id)
   craftFilter = "all",     -- the ladder's All / Learnable now / Skill-ups
@@ -61,6 +75,7 @@ end
 Core:NewAddon("oracle", {
   folder = ADDON, api = { 1, 21 }, data = { 1, 4 },
   db = "OracleDB", defaults = O.DEFAULTS,
+  char = "OracleCharDB", charDefaults = { wants = {} },   -- per character: your Wants
   slash = { "/oracle" },
   commands = { edit = { function() O.MapEdit:Toggle() end, "the map editor" } },
   onUnknown = openMatching,
@@ -145,7 +160,7 @@ for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE
   Core:On(event, "oracle.enter", function() C_Timer.After(.5, entered) end)
 end
 
----Opens Oracle (on an instance key, else the one you're in, else the last one shown); again closes it.
+---Opens Oracle (on an instance key, else the one you're in, else the last page shown); again closes it.
 function O:Toggle(key)
   local win = self.Window and self.Window:Get()
   if not win then return end
@@ -153,7 +168,7 @@ function O:Toggle(key)
     win:Hide()
     return
   end
-  self.Window:Open(key or O.CurrentInstance() or self.db.selected)
+  self.Window:Open(key or O.CurrentInstance())
 end
 
 BINDING_HEADER_ORACLE = "Oracle"

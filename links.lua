@@ -41,21 +41,18 @@ function Links.Find(kind, id)
   if kind == "item" then return byItem[id] end
 end
 
----Opens Oracle where an entity belongs: a quest on the Quests tab, a boss on Bosses, loot on Loot.
+---Opens Oracle where an entity belongs: a quest on its instance's Quests, a boss or its loot on Loot,
+---with the entity in the Inspector.
 function Links.Open(kind, id)
   local hit = Links.Find(kind, id)
   if not hit then return false end
   kind = kind:gsub("s$", "")
-  O.Window:Open(hit.key)
-  local tabs = O.Window.frame.tabs
   if kind == "quest" then
-    tabs:Select("quests")
-    O.Quests:Focus(id)
+    O:Go({ space = "dungeons", key = hit.key, view = "quests", inspect = { "quest", id } })
   elseif kind == "npc" then
-    tabs:Select("bosses")
-    O.Schematic:SetHot(id)
+    O:Go({ space = "dungeons", key = hit.key, view = "loot", boss = id, inspect = { "npc", id } })
   else
-    O:Send("FOCUS", hit.npc)
+    O:Go({ space = "dungeons", key = hit.key, view = "loot", boss = hit.npc, inspect = { "item", id } })
   end
   return true
 end
