@@ -170,7 +170,10 @@ local function showQuest(id)
   if card.after then sheet:Text(card.after, 13, C.muted) end
   for _, n in ipairs(card.notes or {}) do sheet:Text(n, 12, C.faint) end
   local q = DB:Get("quests", id) or {}
+  -- the objective text is a list of lines in NorgannonDB (a string in older data)
   local text = type(q.text) == "table" and q.text.objectives or nil
+  if type(text) == "table" then text = table.concat(text, "\n") end
+  if type(text) ~= "string" then text = nil end
   if text and text ~= "" then
     sheet:Heading("Objective")
     sheet:Text(text, 13, C.text)
