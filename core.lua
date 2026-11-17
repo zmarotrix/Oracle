@@ -32,6 +32,7 @@ O.DEFAULTS = {
   selected = nil,          -- the instance key last shown
   tab = "info",
   questSide = "mine",      -- the Quests tab: "mine" (your side), "other" or "all"
+  planFolded = false,      -- the Quests tab's "Before you go" list folded down to its summary
   mapView = "real",        -- the map panel: "real" (the game's minimap tiles, where built) or "schematic"
   scale = 1,               -- on top of the fit-to-screen scale
   opacity = 1,

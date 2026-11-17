@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.12.1 (2026-11-16)
+
+- "Show all on the map" is now **Track these quests**: with Clairvoyance, the instance's quests get their own
+  section in its tracker as well as their givers on the map.
+
+## 0.12.0 (2026-11-15)
+
+- **Before you go**: the Quests tab opens with what to pick up for the instance, grouped by where (each zone, or
+  inside the instance for quests that start there or from an item that drops there), with a summary: how many to
+  pick up, how many need earlier quests, how many are above your level, in your log or done. Click a row to see its
+  quest. Click the heading to fold the list down to its summary.
+- A quest that needs earlier quests is listed by the first one you haven't done ("first for Leaders of the Fang"),
+  with where it starts; quests that share that first step share a row.
+- **Show all on the map** puts every pickup on your map through Clairvoyance: each quest's giver, or the giver of
+  the first quest before it. They leave the map as you take them.
+- Each quest card says where you stand: done, in your quest log, ready to pick up, from which level, or how many
+  earlier quests it needs and where the first one starts. It also says when a quest can't be shared (each of you
+  picks it up), the optional quests that lead to it, and the quest it leads on to after the run.
+- Track in Clairvoyance on a quest that needs earlier quests shows where the first of them starts.
+- Questlines follow DungeonJournal's research on which quests come first (NorgannonDB 1.5), not only the
+  prerequisites in the game data.
+- The list updates as you pick up and hand in quests, and when you level.
+
 ## 0.11.3 (2026-11-09)
 
 - Asks for Norgannon Core 1.21 or newer, the first Core with everything it needs; the map features from Core 1.28 switch on by themselves when Core has them. An older Core now gets a clear "update Norgannon Core" message instead of errors.
