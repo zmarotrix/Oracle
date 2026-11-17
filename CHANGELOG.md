@@ -1,47 +1,38 @@
 # Changelog
 
-## 0.13.0 (2026-11-16): a new design
+## 0.13.0 (2026-11-16): a new design (beta)
 
-Oracle is redesigned around what you look things up for: loot, professions, quests for a dungeon and a zone's quests.
-Still a beta, so expect changes.
+Oracle is redesigned around what you look things up for: loot, professions, the quests for a dungeon and a zone's
+quests. It's still a beta, so expect changes. The Atlas-style design is archived (tag v0.12.1, branch archive/oracle-1).
 
-- **A new window**: the search and the spaces along the top (Dungeons & Raids, Professions, Zones), a list of places on
-  the left, the page in the middle, and the **Inspector** on the right, which shows whatever you click.
-- **One search for everything**: instances, bosses, items, recipes, professions, quests and zones, five of each, the
-  closest matches first. A boss or an item opens on its loot; a recipe in Professions; a quest in its dungeon.
-- **Dungeons & Raids** lists dungeons by level band (yours first) or raids. An instance opens on its **Loot**: the
-  bosses down the side, numbered as on the map, and every drop beside them with its chance, whether you can use it, and
-  its item level. **For me** keeps only what your class can use; **Uncommon+** hides the commons.
-- **Map** is now a view of its own (the game map or the schematic, with the editor); clicking a boss there shows it in
-  the Inspector instead of leaving the map. **Quests** and **Info** are 0.12's for now (the Ready check comes next).
-- The Inspector: an item's every source (the boss and chance, quests, creatures, vendors, recipes), whether you can use
-  it, Link and Show on map; a quest's state, giver, chain and rewards, with Track; a boss's loot.
-- The old design is archived: tag v0.12.1, branch archive/oracle-1.
-- **Wants**: right-click any item in a loot list (or Want in the Inspector) to want it. The Wants tab lists them by where
-  they drop; an instance says how many of your wants drop there, in its header and in the list. Saved per character.
-- **Professions**, rebuilt the AtlasLoot way: your professions first, then every one; each opens on your rank. Views:
-  **By rank**, **By type** (what it makes: weapons, armour by kind and slot, consumables, ...), **By specialization**
-  (Armorsmith, Weaponsmith and its masters, Gnomish and Goblin Engineering, Dragonscale, Elemental and Tribal
-  Leatherworking) and **Trainers**. Each recipe shows what it makes, its skill-up colours, where it's learned and ✓ when
-  you know it; filters: Learnable now, Not known, Skill-ups now. The header says the next rank you can train and your
-  specialization. A recipe opens in the Inspector: reagents and where they come from, where to learn it, what uses it.
-  The search finds specializations, and recipes by their specialization's name ("armorsmith").
-- **Zones**, rebuilt with the same views as an instance: **Quests** is the zone's quest book (each chain with where you
-  stand and its next step and where it is, unfolding to its steps; then single quests), **Loot** what the zone gives
-  (Everything, Quest rewards, Creature drops, Rares, Vendors; For me, Uncommon+, World drops), **Map** and **Info** as
-  before.
-- **The Ready check** is a dungeon's Quests view: how many quests are ready, what to pick up grouped by where you go
-  (with the giver and coordinates; a quest behind a chain by its first step), chains partway with their next step, what's
-  in your log, what isn't yet, and Track pickups (Clairvoyance). Quests that are steps of another fold into it.
-- Right-click a quest anywhere to Track it.
-- Quests for the other faction or another class are never hidden: they sit at the bottom, greyed, under **Not for you**
-  (in Questlines, Before you go and a zone's quests). Arrows, stars and ticks are the game's own icons.
-- A dungeon's Quests view opens on **Questlines**: every quest chain that touches the instance, followed back to where
-  it starts and on past the run, across zones. Each step shows where you stand: done (ticked), the step you're on
-  (highlighted), what's coming. Steps done inside the dungeon are marked **In the dungeon**, and so are quests that
-  start or end inside; a line that goes in more than once (Blackrock Depths) shows every visit. A quest that starts from
-  an item found inside, like A Crumpled Up Note, is a step of its line: it says the note drops inside once you're on that
-  step. **Before you go** (the pickups by where you go) is the other way to read it.
+- **One window**: the search and the spaces along the top (Dungeons & Raids, Professions, Zones, Wants), a list on the
+  left, the page in the middle, and the **Inspector** on the right, which shows whatever you click. "Beta" under the name.
+- **One search for everything**: instances, bosses, items, recipes, professions, specializations, quests and zones, the
+  closest matches first. A boss or an item opens on its loot, a recipe in Professions, a quest in its dungeon.
+- **Dungeons & Raids** lists dungeons by level band (yours first) or raids. Each instance has four views:
+  - **Loot**: the bosses down the side, numbered as on the map, and every drop with its chance, item level and whether
+    you can use it. **For me** keeps only what your class can use; **Uncommon+** hides the commons.
+  - **Quests** opens on **Questlines**: every quest chain that touches the instance, followed back to where it starts and
+    on past the run, across zones. Done steps are ticked, the step you're on is highlighted, and what's coming follows.
+    Steps done inside the dungeon are marked **In the dungeon**, and so are quests that start or end inside; a line that
+    goes in more than once (Blackrock Depths) shows every visit. A quest that starts from an item found inside, like
+    A Crumpled Up Note, is a step of its line. **Before you go** lists what to pick up, grouped by where you go, with each
+    giver and coordinates; **Track pickups** puts them on your map through Clairvoyance.
+  - **Map**: the game map or the schematic, with the editor; clicking a boss there shows it in the Inspector.
+  - **Info**: the facts, how to get there, keys, attunement and your lockout.
+- **Professions**, the AtlasLoot way: your professions first, each opening on your rank. **By rank**, **By type** (what
+  it makes), **By specialization** (Armorsmith, Weaponsmith and its masters, Gnomish and Goblin Engineering, Dragonscale,
+  Elemental and Tribal Leatherworking) and **Trainers**. Each recipe shows what it makes, its skill-up colours, where it's
+  learned and a tick when you know it; filters: Learnable now, Not known, Skill-ups now. A recipe opens in the Inspector:
+  reagents and their sources, where to learn it, what uses it. (By specialization needs Norgannon Core 1.29 and
+  NorgannonDB 1.7.)
+- **Zones**, with the same views: **Quests** is the zone's quest book (each chain with where you stand and its next step
+  and where it is), **Loot** what the zone gives (quest rewards, creature drops, rares, vendors), **Map** and **Info**.
+- **Wants**: right-click any item in a loot list (or Want in the Inspector). The Wants tab lists them by where they drop,
+  and an instance says how many of your wants drop there. Saved per character.
+- Quests for the other faction or another class are never hidden: they sit at the bottom, greyed, under **Not for you**.
+- Right-click a quest anywhere to Track it. The Inspector shows an item's every source, a quest's state, giver, chain
+  and rewards, and a boss's loot.
 
 ## 0.12.1 (2026-11-16)
 
