@@ -273,11 +273,13 @@ local function buildList(parent)
       end
       if r.rec.forever then parts[#parts + 1] = UI.Code(UI.Accent("oracle")) .. "Forever|r" end
       if r.rec.item then
+        row.itemFrame.spellId = nil
         local info = O.Items.Fill(row.itemFrame, r.rec.item, "")
         row.itemFrame.itemName:SetText(info.name .. ((r.rec.count or 1) > 1 and (" ×" .. r.rec.count) or ""))
         row.itemFrame.itemMeta:SetText(table.concat(parts, " · ") .. (info.kind ~= "" and (" · " .. info.kind) or ""))
       else
         row.itemFrame.itemId = nil
+        row.itemFrame.spellId = r.id                 -- the icon shows the recipe's spell instead
         row.itemFrame.tile.icon:SetTexture(Core.Global("GetSpellTexture", r.id) or 134400)
         row.itemFrame.itemName:SetText(r.name)
         row.itemFrame.itemName:SetTextColor(C.text[1], C.text[2], C.text[3])
@@ -298,13 +300,6 @@ local function buildList(parent)
       O.Inspector:Show("recipe", r.id)
       f.list:Select(r)
     end,
-    onEnter = function(row, r)
-      if not r.rec.item then return end
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(r.rec.item)
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
   })
   f.list:SetPoint("TOPLEFT", 1, -4)
   f.list:SetPoint("BOTTOMRIGHT", -1, 4)

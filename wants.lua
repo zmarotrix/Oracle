@@ -8,7 +8,7 @@ if O.disabled then return end
 local UI = Core.UI
 local C = UI.C
 
-local Wants = { label = "Wants", order = 4 }
+local Wants = { label = "Wants", order = 5 }
 O.Wants = Wants
 
 local ROW = 42
@@ -138,6 +138,7 @@ function Wants:Build(page)
     createRow = function(row, content)
       content.rightInset = 200
       O.Items.Build(content)
+      content.tooltipHint = function() return "Click: where it drops · right-click: no longer wanted" end
       row.itemFrame = content
       row.source = UI.Text(content, "body", 12, C.muted)
       row.source:SetPoint("RIGHT", -12, 0)
@@ -154,13 +155,6 @@ function Wants:Build(page)
       if r.key then return O:Go({ space = "dungeons", key = r.key, view = "loot", boss = r.npc, inspect = { "item", r.item } }) end
       O.Inspector:Show("item", r.item)
     end,
-    onEnter = function(row, r)
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(r.item)
-      GameTooltip:AddLine("Click: where it drops · right-click: no longer wanted", .66, .63, .54)
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
   })
   f.list:SetPoint("TOPLEFT", 1, -4)
   f.list:SetPoint("BOTTOMRIGHT", -1, 4)

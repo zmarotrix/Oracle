@@ -94,6 +94,16 @@ local function showItem(id)
     elseif you.ok then sheet:Text("You can use it at level " .. you.later, 13, C.warn)
     else sheet:Text(O.ICON.cross .. " " .. you.why, 13, C.bad) end
   end
+  -- an honor rank or a reputation standing (NorgannonDB 1.8): click to see the rank's or faction's rewards
+  for _, need in ipairs(O.Rewards and O.Rewards.Needs(id) or {}) do
+    local text, met, go = need[1], need[2], need[3]
+    if go then
+      go.space = "rewards"
+      sheet:Line(text, met and "You have it" or "Not yet", nil, false, function() O:Go(go) end, met and C.good or C.warn)
+    elseif not (you and not you.ok) then
+      sheet:Text(text, 13, met and C.muted or C.bad)
+    end
+  end
 
   sheet:Heading("Where it comes from")
   local any = false

@@ -124,6 +124,8 @@ local function buildNav(parent)
       row.right:SetText(e.navRight or "")
       local c = e.navRightColor or C.muted
       row.right:SetTextColor(c[1], c[2], c[3])
+      row.name:SetAlpha(1)               -- a space may grey a row (navRow); rows are reused across spaces
+      row.meta:SetAlpha(1)
       local space = Shell:Space()
       if space and space.navRow then space:navRow(row, e) end
     end,

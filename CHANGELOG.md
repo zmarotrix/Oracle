@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.14.0 (not released yet)
+
+- **PvP & Factions**, a new space next to Zones:
+  - **PvP** lists what each honor rank lets you buy, Private or Scout to Grand Marshal or High Warlord. Your side's
+    ranks come first, with a tick on the ones you've reached; the other side's are greyed below them. A rank's rewards
+    are grouped into weapons, cloth, leather, mail, plate, shields, accessories and mounts, with who sells each one.
+  - **Factions** lists each faction's rewards by the standing they need, Friendly to Exalted, with your own standing and
+    a tick on the standings you have. Battlegrounds come first, then Azeroth's factions, the Steamwheedle Cartel's
+    towns and WoW Forever's own factions; the other side's are greyed at the bottom. The battleground factions
+    (Stormpike Guard, Frostwolf Clan, Warsong Outriders, Silverwing Sentinels) list what their supply officers sell,
+    because the game's item data doesn't say which standing those need.
+  - **For me** keeps only what your class can use. Right-click an item to want it.
+  - Click a section's header (Plate, Honored...) to fold it; it stays folded on the next rank or faction.
+  - Rewards are laid out in two columns, each section down the left column and then the right, with the item's
+    kind and seller under its name.
+- The Inspector says what an item needs: "Needs rank 7, Blood Guard" or "Needs Honored with The Defilers", ticked when
+  you have it, and click it to see that rank's or faction's rewards. Another side's gear says "Alliance only" or
+  "Horde only", and **For me** in Loot leaves it out.
+- An item's tooltip now shows only when you hover its icon, everywhere in Oracle (loot, Wants, Zones, Professions,
+  the Inspector), so the list stays readable as you move across it. The "Right-click: want it" hint moved there too.
+- The search finds honor ranks and factions, and a PvP or reputation reward opens on its rank's or faction's page.
+- Needs NorgannonDB 1.6 (schema 1.8) for the rewards; with an older NorgannonDB the space is empty.
+
 ## 0.13.1, 2026-11-16
 
 - Fixed an error when clicking a quest: its objective text now shows in the Inspector.

@@ -16,7 +16,7 @@ local Search = {}
 O.Search = Search
 
 local PER_KIND, ROW = 5, 26
-local ORDER = { "Specializations", "Instances", "Bosses", "Items", "Recipes", "Professions", "Quests", "Zones" }
+local ORDER = { "Specializations", "Instances", "Bosses", "Items", "Recipes", "Professions", "PvP & Factions", "Quests", "Zones" }
 
 local box, drop, list, text, results, cursor = nil, nil, nil, "", {}, 1
 local bosses, recipes, specs   -- name indexes, built on the first search
@@ -90,6 +90,16 @@ function Search.Find(query)
   for _, z in ipairs(O.Zones and O.Zones:Entries() or {}) do
     if not z.group then add("Zones", z.name, z.continent or "", { space = "zones", area = z.zone }) end
   end
+  -- honor ranks (both sides' titles) and factions
+  if O.Rewards then
+    for _, e in ipairs(O.Rewards.PvPNav()) do
+      if not e.group then add("PvP & Factions", e.name, "Rank " .. e.rank .. " · " .. (e.side == "A" and "Alliance" or "Horde"),
+        { space = "rewards", rank = e.rank, side = e.side }) end
+    end
+    for _, e in ipairs(O.Rewards.FactionNav()) do
+      if not e.group then add("PvP & Factions", e.name, "Faction · " .. (e.navMeta or ""), { space = "rewards", faction = e.faction }) end
+    end
+  end
   -- items and quests: the Core's name index
   for _, hit in ipairs((Core.DB:Search(query, { kinds = { items = true }, limit = 12 }))) do
     local id = hit.ids and hit.ids[1]
@@ -97,7 +107,17 @@ function Search.Find(query)
       local where = O.Links and O.Links.Find("item", id)
       local go = where and { space = "dungeons", key = where.key, view = "loot", boss = where.npc, inspect = { "item", id } }
         or { inspect = { "item", id } }
-      add("Items", hit.name, where and (O.Model:Get(where.key) or {}).name or "", go, { item = id })
+      local meta = where and (O.Model:Get(where.key) or {}).name or ""
+      -- a PvP or reputation reward opens its rank's or faction's page
+      local rec = not where and NorgannonDB and NorgannonDB:Get("items", id)
+      if rec and rec.pvpRank and O.Rewards then
+        go = { space = "rewards", rank = rec.pvpRank, side = rec.side, inspect = { "item", id } }
+        meta = O.Rewards.RankName(rec.pvpRank, rec.side or O.Rewards.MySide() or "A")
+      elseif rec and rec.repFaction and O.Rewards and O.Rewards.Faction(rec.repFaction) then
+        go = { space = "rewards", faction = rec.repFaction, inspect = { "item", id } }
+        meta = O.Rewards.Faction(rec.repFaction).name
+      end
+      add("Items", hit.name, meta, go, { item = id })
     end
   end
   for _, hit in ipairs((Core.DB:Search(query, { kinds = { quests = true }, limit = 12 }))) do

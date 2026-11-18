@@ -679,21 +679,17 @@ local function buildItems(parent)
     createRow = function(row, content)
       O.Items.Build(content)
       row.box = content
+      content.tooltipHint = function()
+        local r = row.item
+        if not r then return nil end
+        return Zones.ItemSource(r) .. "\n" .. (r.source == "reward" and "Click: show the quest giver on your map" or "Click: show it on your map")
+      end
     end,
     updateRow = function(row, r)
       local info = O.Items.Fill(row.box, r.item)
       local kind = info.kind ~= "" and (info.kind .. "  ·  ") or ""
       row.box.itemMeta:SetText(kind .. Zones.ItemSource(r))
     end,
-    onEnter = function(row, r)
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(r.item)
-      GameTooltip:AddLine(Zones.ItemSource(r), C.muted[1], C.muted[2], C.muted[3], true)
-      local hint = r.source == "reward" and "Click: show the quest giver on your map" or "Click: show it on your map"
-      GameTooltip:AddLine(hint, C.faint[1], C.faint[2], C.faint[3])
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
     onClick = function(r)
       local link = O.Items.Info(r.item).link
       if IsShiftKeyDown() and link and ChatEdit_InsertLink then return ChatEdit_InsertLink(link) end

@@ -372,6 +372,7 @@ local function buildLoot(parent)
     createRow = function(row, content)
       content.rightInset = 60
       O.Items.Build(content)
+      content.tooltipHint = function(id) return O.Wants and (O.Wants:Has(id) and "Right-click: no longer wanted" or "Right-click: want it") end
       row.itemFrame = content
       row.chance = UI.Text(content, "body", 12, C.muted)
       row.chance:SetPoint("RIGHT", -12, 0)
@@ -401,13 +402,6 @@ local function buildLoot(parent)
     onGroupClick = function(g)
       if g.quest then O.Inspector:Show("quest", g.quest) elseif g.npc then O.Inspector:Show("npc", g.npc) end
     end,
-    onEnter = function(row, r)
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(r.item)
-      GameTooltip:AddLine("Right-click: want it", .66, .63, .54)
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
   })
   f.list:SetPoint("TOPLEFT", 1, -4)
   f.list:SetPoint("BOTTOMRIGHT", -1, 4)

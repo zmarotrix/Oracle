@@ -193,6 +193,7 @@ local function buildLoot(parent)
     createRow = function(row, content)
       content.rightInset = CHANCE_W + 8
       O.Items.Build(content)
+      content.tooltipHint = function(id) return O.Wants and (O.Wants:Has(id) and "Right-click: no longer wanted" or "Right-click: want it") end
       row.itemFrame = content
       row.chance = UI.Text(content, "body", 12, C.muted)
       row.chance:SetPoint("RIGHT", -10, 0)
@@ -231,13 +232,6 @@ local function buildLoot(parent)
       end
       O.Inspector:Show("item", it.item)
     end,
-    onEnter = function(row, it)
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(it.item)
-      GameTooltip:AddLine(O.Wants:Has(it.item) and "Right-click: no longer wanted" or "Right-click: want it", .66, .63, .54)
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
   })
   f.list:SetPoint("TOPLEFT", 1, -4)
   f.list:SetPoint("BOTTOMRIGHT", -1, 4)

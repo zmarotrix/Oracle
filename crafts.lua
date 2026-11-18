@@ -281,6 +281,9 @@ local function buildLadder(parent)
       row.icon:SetSize(18, 18)
       row.icon:SetPoint("LEFT", 10, 0)
       row.icon:SetTexCoord(.08, .92, .08, .92)
+      row.iconHit = CreateFrame("Frame", nil, content)   -- the item tooltip is the icon's
+      row.iconHit:SetAllPoints(row.icon)
+      O.Items.IconTooltip(row.iconHit)
       row.learn = UI.Text(content, "body", 12, C.faint)
       row.learn:SetPoint("LEFT", row.icon, "RIGHT", 6, 0)
       row.learn:SetWidth(26)
@@ -300,6 +303,7 @@ local function buildLadder(parent)
     end,
     updateRow = function(row, item)
       local rec = item.rec
+      row.iconHit.itemId, row.iconHit.spellId = rec.item, not rec.item and item.id or nil
       local info = rec.item and O.Items.Info(rec.item)
       local icon = info and info.icon
       if not icon then
@@ -315,13 +319,6 @@ local function buildLadder(parent)
     end,
     onClick = function(item) Crafts:SelectRecipe(item.id) end,
     onGroupClick = function(group) Crafts:SetFolded(O.db.craft, group.band, not group.folded) end,
-    onEnter = function(row, item)
-      if not item.rec.item then return end
-      GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(item.rec.item)
-      GameTooltip:Show()
-    end,
-    onLeave = function() GameTooltip:Hide() end,
   })
   list:SetPoint("TOPLEFT", axis, "BOTTOMLEFT", 0, -2)
   list:SetPoint("BOTTOMRIGHT", pane, "BOTTOMRIGHT", -1, 4)
