@@ -49,7 +49,7 @@ function Sheet.Findable(item)
 end
 
 function Sheet.New(parent)
-  local self = setmetatable({ pool = { text = {}, item = {}, line = {} }, used = {} }, Sheet)
+  local self = setmetatable({ pool = { text = {}, item = {}, itemhead = {}, line = {} }, used = {} }, Sheet)
   self.box = UI.Pane(parent)
   self.box:SetAllPoints()
   self.area = UI.ScrollArea(self.box)
@@ -161,6 +161,61 @@ function Sheet:Item(item, meta, count, onClick)
   f.track.kind, f.track.id = "item", item
   f.track:SetShown(Sheet.Findable(item))
   self.y = self.y - 42
+  return f
+end
+
+local function makeItemHead(self)
+  local f = CreateFrame("Button", nil, self.area.content)
+  f.hover = UI.Tex(f, "BACKGROUND", 0, { 1, 1, 1, .04 })
+  f.hover:SetAllPoints()
+  f.hover:Hide()
+  f.tile = CreateFrame("Frame", nil, f)
+  f.tile:SetSize(40, 40)
+  f.tile:SetPoint("TOPLEFT", 6, -4)
+  f.tile.border = UI.Tex(f.tile, "BACKGROUND", 0, C.black)
+  f.tile.border:SetAllPoints()
+  f.tile.icon = f.tile:CreateTexture(nil, "ARTWORK")
+  f.tile.icon:SetPoint("TOPLEFT", 1, -1)
+  f.tile.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+  f.tile.icon:SetTexCoord(.08, .92, .08, .92)
+  f.itemName = UI.Text(f, "title", 20)
+  f.itemName:SetPoint("TOPLEFT", f.tile, "TOPRIGHT", 10, 0)
+  f.itemName:SetJustifyH("LEFT")
+  f.itemName:SetWordWrap(true)
+  f.itemMeta = UI.Text(f, "body", 13, C.muted)
+  f.itemMeta:SetPoint("TOPLEFT", f.itemName, "BOTTOMLEFT", 0, -2)
+  f.itemMeta:SetJustifyH("LEFT")
+  -- the whole header is the item: hover for its tooltip, shift-click to link it, ctrl-click to try it on
+  f:SetScript("OnEnter", function(row)
+    row.hover:Show()
+    if not row.itemId then return end
+    GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+    GameTooltip:SetItemByID(row.itemId)
+    GameTooltip:AddLine("Shift-click: link it in chat", .66, .63, .54, true)
+    GameTooltip:Show()
+  end)
+  f:SetScript("OnLeave", function(row) row.hover:Hide() GameTooltip:Hide() end)
+  O.Items.Hook(f)
+  return f
+end
+
+---The item page's header: icon, name in its quality colour and its kind. Hover shows the game's
+---tooltip; shift-click links it in chat, ctrl-click tries it on.
+function Sheet:ItemHeader(item)
+  local f = self:take("itemhead", makeItemHead)
+  f:SetPoint("TOPLEFT", self.area.content, "TOPLEFT", 4, self.y)
+  f:SetWidth(self.width - 8)
+  f.itemName:SetWidth(self.width - 8 - 62)        -- set here: anchors alone don't size it before layout
+  f.itemMeta:SetWidth(self.width - 8 - 62)
+  local info = O.Items.Info(item)
+  f.itemId, f.itemLink = item, info.link
+  f.tile.icon:SetTexture(info.icon)
+  f.itemName:SetText(info.name)
+  f.itemName:SetTextColor(info.color[1], info.color[2], info.color[3])
+  f.itemMeta:SetText(info.kind ~= "" and info.kind or "Item")
+  local h = math.max(48, (f.itemName:GetStringHeight() or 22) + (f.itemMeta:GetStringHeight() or 14) + 12)
+  f:SetHeight(h)
+  self.y = self.y - h - 4
   return f
 end
 

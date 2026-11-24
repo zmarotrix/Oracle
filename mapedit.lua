@@ -258,8 +258,12 @@ local function build(map)
   bar:SetHeight(Edit.BAR_HEIGHT - 12)
   bar:SetFrameLevel(map:GetFrameLevel() + 45)
   bar:EnableMouse(true)
-  bar.box = UI.Box(bar, "BACKGROUND", 0)
-  bar.box:Set(UI.Accent("oracle"), { .07, .06, .1, .97 }, { .04, .035, .06, .97 })
+  -- a small panel of the suite's, lying on the map (as the Norgannon button's list)
+  local accent = UI.Accent("oracle")
+  UI.Shadow(bar, -8)
+  UI.Round(bar, "BACKGROUND", -4, 10):SetColor(UI.Mix(C.stone, accent, .05))
+  UI.Wash(bar, "BACKGROUND", -3, 10, 60):SetColor(accent, .167)   -- three quarters of a window's
+  UI.Sheen(bar, "BACKGROUND", -2)
   bar.title = UI.Text(bar, "title", 14, UI.Accent("oracle"))
   bar.title:SetPoint("TOPLEFT", 10, -8)
   bar.title:SetText("Editing the map")
@@ -290,8 +294,8 @@ local function build(map)
   -- the floor name box
   local box = CreateFrame("Frame", nil, bar)
   box:SetSize(150, 22)
-  box.bg = UI.Box(box, "BACKGROUND", 0)
-  box.bg:Set(C.lineStrong, C.inset)
+  box.bg = UI.Field(box, "BACKGROUND", 0)
+  box.bg:Set(UI.Mix(C.line, accent, .22), false)
   local edit = CreateFrame("EditBox", nil, box)
   edit:SetPoint("LEFT", 6, 0)
   edit:SetPoint("RIGHT", -6, 0)
@@ -308,6 +312,8 @@ local function build(map)
   end
   edit:SetScript("OnEnterPressed", function(self) save(self) self:ClearFocus() end)
   edit:SetScript("OnEscapePressed", function(self) self:ClearFocus() Edit:Update() end)
+  edit:SetScript("OnEditFocusGained", function() box.bg:Set(accent, true) end)   -- lit while you type
+  edit:SetScript("OnEditFocusLost", function() box.bg:Set(UI.Mix(C.line, accent, .22), false) end)
   box.edit = edit
   function box:SetText(text) edit:SetText(text or "") end
   function box:Save() save(edit) end

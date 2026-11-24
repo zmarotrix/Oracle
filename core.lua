@@ -8,7 +8,7 @@ local DB = NorgannonDB
 
 if not (Core and Core.NewAddon) then
   Oracle = { disabled = true }
-  print("Oracle needs Norgannon Core 1.21 or newer; it is turned off.")
+  print("Oracle needs Norgannon Core 1.33 or newer; it is turned off.")
   return
 end
 
@@ -73,7 +73,7 @@ end
 -- and the add-on menu. Messages inside Oracle ride on the Core's bus as ORACLE_*, through O:Send and O:Listen.
 -- Left-click and /oracle open the window; right-click opens settings; /oracle <name> opens that instance.
 Core:NewAddon("oracle", {
-  folder = ADDON, api = { 1, 21 }, data = { 1, 4 },
+  folder = ADDON, api = { 1, 33 }, data = { 1, 4 },
   db = "OracleDB", defaults = O.DEFAULTS,
   char = "OracleCharDB", charDefaults = { wants = {} },   -- per character: your Wants
   slash = { "/oracle" },

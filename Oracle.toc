@@ -3,7 +3,7 @@
 ## Category: NorgannonDB
 ## Notes: Look up loot, professions and quests in WoW Forever: dungeons and raids, recipes, zones and the quests to take before a run. Powered by NorgannonDB. /oracle
 ## Author: Maro
-## Version: 0.14.0
+## Version: 0.14.1
 ## X-License: All Rights Reserved
 ## Dependencies: NorgannonDB, NorgannonDB_Core
 ## SavedVariables: OracleDB

@@ -86,8 +86,7 @@ end
 
 local function showItem(id)
   local info = O.Items.Info(id)
-  sheet:Text(info.name, 20, info.color, "title")
-  sheet:Text(info.kind ~= "" and info.kind or "Item", 13, C.muted)
+  sheet:ItemHeader(id)
   local you = O.Items.ForYou and O.Items.ForYou(id)
   if you then
     if you.ok and not you.later then sheet:Text(O.ICON.check .. " You can use it", 13, C.good)

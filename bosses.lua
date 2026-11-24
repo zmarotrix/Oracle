@@ -14,12 +14,12 @@ local Bosses = {}
 O.Bosses = Bosses
 
 local VIOLET, ORANGE, MISSING = UI.Hex("b48cff"), UI.Hex("ff8a3d"), UI.Hex("8a7d62")
--- rank: label and badge colours (mockup RANK and .badge.rare / .badge.boss)
+-- rank: label and badge colour (mockup RANK and .badge.rare / .badge.boss)
 local RANK = {
   [1] = { "Elite" },
-  [2] = { "Rare elite", UI.Hex("c9c9ff"), UI.Hex("6a6aa8") },
-  [3] = { "Boss", UI.Hex("ffb37a"), UI.Hex("8a5530") },
-  [4] = { "Rare", UI.Hex("c9c9ff"), UI.Hex("6a6aa8") },
+  [2] = { "Rare elite", UI.Hex("c9c9ff") },
+  [3] = { "Boss", UI.Hex("ffb37a") },
+  [4] = { "Rare", UI.Hex("c9c9ff") },
 }
 Bosses.RANK = RANK
 
@@ -73,18 +73,18 @@ local pane, area, frames = nil, nil, {}
 
 local function badge(parent)
   local b = CreateFrame("Frame", nil, parent)
-  b:SetHeight(15)
-  b.box = UI.Box(b, "BACKGROUND", 0)
+  b:SetHeight(16)
+  b.pill = UI.Pill(b, 16, "BACKGROUND", 0)   -- tinted like the sides' pills on the Quests tab
   b.text = UI.Text(b, "body", 11, C.muted)
   b.text:SetPoint("CENTER", 0, 0)
   function b:Set(rank)
     local r = RANK[rank]
     if not r then self:Hide() return end
     self.text:SetText(string.upper(r[1]))
-    local fg, line = r[2] or C.muted, r[3] or C.lineStrong
-    self.text:SetTextColor(fg[1], fg[2], fg[3])
-    self.box:Set(line, C.inset)
-    self:SetWidth(math.floor(self.text:GetStringWidth() + 10))
+    local color = r[2] or C.muted
+    self.text:SetTextColor(color[1], color[2], color[3])
+    self.pill:SetColor(color, .16)
+    self:SetWidth(math.floor(self.text:GetStringWidth() + 14))
     self:Show()
   end
   return b

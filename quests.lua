@@ -567,14 +567,24 @@ local function markButton(parent, text, style, markKey, accentKey, onClick)
   return b
 end
 
+local RADIUS = 6                                                          -- a card's corners, as UI.Card's
+local FILL = UI.Mix({ .13, .105, .08 }, UI.Accent("oracle"), .06)          -- and its fill
+
+---A raised card's look on a frame: the fill, and its top edge catching the light. f.box:Set(outline or nil, fill).
+local function dressCard(f)
+  f.box = UI.SoftBox(f, "BACKGROUND", 0, RADIUS)
+  f.box:Set(nil, FILL)
+  local gleam = UI.Tex(f, "BACKGROUND", 3)
+  gleam:SetHeight(1)
+  gleam:SetPoint("TOPLEFT", RADIUS, 0)
+  gleam:SetPoint("TOPRIGHT", -RADIUS, 0)
+  gleam:SetColorTexture(1, 1, 1, .07)
+end
+
 local function newCard()
   local f = CreateFrame("Frame", nil, area.content)
-  f.box = UI.Box(f, "BACKGROUND", 0)
-  f.box:Set(C.lineStrong, { .114, .09, .067 }, { .07, .055, .04 })
-  f.stripe = f:CreateTexture(nil, "ARTWORK")       -- a one-sided quest's edge, in the side's colour
-  f.stripe:SetPoint("TOPLEFT", 1, -1)
-  f.stripe:SetPoint("BOTTOMLEFT", 1, 1)
-  f.stripe:SetWidth(3)
+  dressCard(f)
+  f.stripe = UI.RoundEdge(f, "BORDER", 0, RADIUS, 3)   -- a one-sided quest's edge, in the side's colour
   f.level = UI.Text(f, "body", 14)
   f.level:SetPoint("TOPLEFT", CARD_PAD, -10)
   f.name = UI.Text(f, "title", 15)
@@ -629,11 +639,11 @@ end
 -- the faction marks and the questline's rail on a card
 local function markCard(f, card, inner)
   local color = card.side and SIDE_COLOR[card.side]
-  f.stripe:SetShown(color ~= nil)
+  for _, piece in ipairs(f.stripe.pieces) do piece:SetShown(color ~= nil) end
   f.sidePill:SetShown(color ~= nil)
   local pillWidth = 0
   if color then
-    f.stripe:SetColorTexture(color[1], color[2], color[3], 1)
+    f.stripe:SetColor(color, 1)
     f.sidePill.label:SetText(card.side)
     f.sidePill.label:SetTextColor(color[1], color[2], color[3])
     f.sidePill.fill:SetColor(color, .18)
@@ -747,12 +757,12 @@ local plan
 
 local function buildPlan()
   plan = CreateFrame("Frame", nil, area.content)
-  plan.box = UI.Box(plan, "BACKGROUND", 0)
-  plan.box:Set(C.line, { .09, .07, .05 }, { .06, .045, .03 })
+  dressCard(plan)
+  UI.Wash(plan, "BACKGROUND", 2, RADIUS, 34):SetColor(UI.Accent("oracle"), .12)   -- the summary: a little of the accent on top
   plan.fold = CreateFrame("Button", nil, plan)
   plan.fold:SetPoint("TOPLEFT", 8, -6)
   plan.fold:SetHeight(18)
-  plan.title = UI.Text(plan.fold, "title", 14, C.goldSoft)
+  plan.title = UI.Text(plan.fold, "title", 14, UI.AccentText("oracle"))
   plan.title:SetPoint("LEFT", 0, 0)
   plan.title:SetText("Before you go")
   plan.chev = UI.Text(plan.fold, "body", 12, C.faint)
@@ -1034,8 +1044,8 @@ function Quests:Focus(id)
   if not f then return end
   local top = -(select(5, f:GetPoint(1)) or 0)
   area:SetVerticalScroll(math.max(0, top - 6))
-  f.box:Set(UI.Accent("oracle"), { .114, .09, .067 }, { .07, .055, .04 })
-  C_Timer.After(2, function() f.box:Set(C.lineStrong, { .114, .09, .067 }, { .07, .055, .04 }) end)
+  f.box:Set(UI.Accent("oracle"), FILL)
+  C_Timer.After(2, function() f.box:Set(nil, FILL) end)
   self.focused = id
 end
 

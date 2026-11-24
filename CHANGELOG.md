@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.14.0 (not released yet)
+## 0.14.1, 2026-11-23
+
+- An item's page now opens with the item itself, icon and name: hover it for the game's tooltip, shift-click it to
+  link it in chat, ctrl-click to try it on.
+- **The last square boxes match the suite's new windows.** Quest cards and "Before you go" are raised cards without
+  outlines, boss ranks are pills, the map editor's bar is a rounded panel with a text field that lights up while you
+  type, and search results open in a raised panel in Oracle's colour.
+- Needs Norgannon Core 1.33 or newer.
+
+## 0.14.0, 2026-11-18
 
 - **PvP & Factions**, a new space next to Zones:
   - **PvP** lists what each honor rank lets you buy, Private or Scout to Grand Marshal or High Warlord. Your side's

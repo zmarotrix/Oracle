@@ -184,7 +184,12 @@ function Search:Build(parent)
   box = UI.Search(parent, "Search items, bosses, recipes, quests, zones…", function(t) update(t) end,
     function() Search.Open(results[cursor]) end)
   -- the results float under the box, over the window
-  drop = UI.Pane(UIParent)
+  -- a raised panel as Core's dropdowns open, in Oracle's accent
+  local accent = UI.Accent("oracle")
+  drop = CreateFrame("Frame", nil, UIParent)
+  UI.Slice(drop, "BACKGROUND", -8, UI.TEX.shadow, 31 / 128, 31, 28)   -- UI.Shadow's corners are too big for one result
+  UI.Round(drop, "BACKGROUND", -4, 6):SetColor(UI.Mix(C.stone2, accent, .06))
+  UI.Round(drop, "BACKGROUND", -3, 6, "line"):SetColor(UI.Mix(C.line, accent, .35))
   drop:SetFrameStrata("DIALOG")
   drop:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -4)
   drop:SetWidth(480)
@@ -213,7 +218,7 @@ function Search:Build(parent)
   })
   list:SetPoint("TOPLEFT", 1, -5)
   list:SetPoint("BOTTOMRIGHT", -1, 5)
-  list:ApplyAccent(UI.Accent("oracle"))
+  list:ApplyAccent(accent)
   local edit = box.edit
   if edit then
     edit:HookScript("OnEscapePressed", close)
